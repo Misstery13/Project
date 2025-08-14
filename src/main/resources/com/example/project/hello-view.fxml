@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.project.HelloController">
+   <bottom>
+      <Pane prefHeight="50.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label layoutX="23.0" layoutY="17.0" text="Usuario:" />
+            <Label fx:id="lbl_nombreUsuario" layoutX="89.0" layoutY="17.0" text="Diana Melena" />
+            <Label layoutX="194.0" layoutY="17.0" text="Fecha:" />
+            <Label fx:id="lbl_fecha" layoutX="235.0" layoutY="17.0" text="14/08/25" />
+            <Label layoutX="320.0" layoutY="17.0" text="Version:" />
+            <Label fx:id="lbl_version" layoutX="374.0" layoutY="17.0" text="14/08/25" />
+            <Label layoutX="459.0" layoutY="17.0" text="Hora:" />
+            <Label fx:id="lbl_horaActual" layoutX="513.0" layoutY="17.0" text="09:20:23" />
+         </children></Pane>
+   </bottom>
+   <top>
+      <MenuBar BorderPane.alignment="CENTER">
+        <menus>
+          <Menu mnemonicParsing="false" text="Administracion">
+            <items>
+              <MenuItem fx:id="menu_pantalla1" mnemonicParsing="false" onAction="#acc_menuPantalla1" text="Pantalla 1" />
+                  <MenuItem fx:id="menu_Pantalla2" mnemonicParsing="false" onAction="#acc_menuPantalla2" text="Pantalla 2" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Proceso">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Delete" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Reportes">
+            <items>
+              <MenuItem mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+   </top>
+   <left>
+      <Accordion prefHeight="325.0" prefWidth="121.0" BorderPane.alignment="CENTER">
+        <panes>
+          <TitledPane animated="false" prefHeight="275.0" prefWidth="115.0" text="Administracion">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Button fx:id="btn_pantalla1" alignment="BOTTOM_CENTER" layoutX="34.0" layoutY="14.0" mnemonicParsing="false" onAction="#acc_btnPantalla1" text="Pantalla 1">
+                           <graphic>
+                              <ImageView fitHeight="33.0" fitWidth="29.0" pickOnBounds="true" preserveRatio="true" />
+                           </graphic>
+                        </Button>
+                        <Button fx:id="btn_pantalla2" alignment="BOTTOM_CENTER" layoutX="34.0" layoutY="84.0" mnemonicParsing="false" onAction="#acc_btnpantalla2" text="Pantalla 2">
+                           <graphic>
+                              <ImageView fitHeight="33.0" fitWidth="29.0" pickOnBounds="true" preserveRatio="true" />
+                           </graphic>
+                        </Button>
+                     </children></AnchorPane>
+            </content>
+          </TitledPane>
+          <TitledPane animated="false" prefHeight="287.0" prefWidth="146.0" text="Proceso">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="249.0" prefWidth="74.0" />
+            </content>
+          </TitledPane>
+          <TitledPane animated="false" prefHeight="222.0" prefWidth="146.0" text="Reportes">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </TitledPane>
+        </panes>
+      </Accordion>
+   </left>
+   <center>
+      <VBox fx:id="dataPane" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER" />
+   </center>
+</BorderPane>
