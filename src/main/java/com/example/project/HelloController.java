@@ -14,6 +14,8 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
 public class HelloController {
 
@@ -39,10 +41,13 @@ public class HelloController {
 
     @FXML
     public void acc_menuPantalla1(ActionEvent actionEvent) {
+        String pantalla= "/FXMLpantalla1.fxml";
+
     }
 
     @FXML
-    public void acc_btnpantalla2(ActionEvent actionEvent) {
+    public void acc_btnpantalla2(ActionEvent actionEvent) throws IOException {
+        String pantalla = "/FXMLpantalla2.fxml";
     }
 
     @FXML
