@@ -10,6 +10,8 @@ public class FXMLPantalla2 {
     private Button btn_cancelar;
     @javafx.fxml.FXML
     private AnchorPane ap_pantalla2;
+    @javafx.fxml.FXML
+    private Button btn_grabar;
 
     @javafx.fxml.FXML
     public void acc_btncancelar(ActionEvent actionEvent) {
@@ -19,5 +21,9 @@ public class FXMLPantalla2 {
         } catch (Exception e) {
             System.out.println(""+e.getMessage());
         }
+    }
+
+    @javafx.fxml.FXML
+    public void acc_btngrabar(ActionEvent actionEvent) {
     }
 }

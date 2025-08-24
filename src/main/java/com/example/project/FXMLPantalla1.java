@@ -31,7 +31,7 @@ public class FXMLPantalla1 {
     private Button btn_grabar;
 
     public void initialize(URL url, ResourceBundle rb) {
-        this.txt_cedula.setOnKeyPressed(evento->´{
+        this.txt_cedula.setOnKeyPressed(evento->{
             if(evento.getCode()== KeyCode.ENTER){
                 System.out.println("tecla enter en txt_cedula");
                 //fun_validar cedula
@@ -39,7 +39,7 @@ public class FXMLPantalla1 {
                 evento.consume();
             }
         });
-        this.txt_apellidos.setOnKeyPressed(evento->´{
+        this.txt_apellidos.setOnKeyPressed(evento->{
             if(evento.getCode()== KeyCode.ENTER || evento.getCode() == KeyCode.TAB){
                 System.out.println("tecla enter en txt_cedula");
                 //fun_validar cedula
@@ -47,13 +47,13 @@ public class FXMLPantalla1 {
                 evento.consume();
             }
             //evento cuando pierde el focus
-        this.txt_cedula.focusedProperty().addListener((obs.oldVal,newVal)->{
+        this.txt_cedula.focusedProperty().addListener((obs,oldVal,newVal) ->{
             if (!newVal) {
                 System.out.println("Validar desde el focus");
 
             }
 
-                this.txt_apellidos.setOnKeyPressed(evento->´{
+                this.txt_apellidos.setOnKeyPressed(evento->{
                     if(evento.getCode()== KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
                         System.out.println("tecla enter en txt_apellidos");
                         //fun_validar cedula
@@ -61,14 +61,14 @@ public class FXMLPantalla1 {
                         evento.consume();
                     }
 
-                    this.txt_direccion.setOnKeyPressed(evento->´{
+                    this.txt_direccion.setOnKeyPressed(evento->{
                         if(evento.getCode()== KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
                             System.out.println("tecla enter en txt_apellidos");
                             //fun_validar cedula
                             this.txt_telefono.requestFocus();
                             evento.consume();
                         }
-                        this.txt_telefono.setOnKeyPressed(evento->´{
+                        this.txt_telefono.setOnKeyPressed(evento->{
                             if(evento.getCode()== KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
                                 System.out.println("tecla enter en txt_apellidos");
                                 //fun_validar cedula
@@ -77,7 +77,7 @@ public class FXMLPantalla1 {
                             }
 
                         });
-                        this.txt_correo.setOnKeyPressed(evento->´{
+                        this.txt_correo.setOnKeyPressed(evento->{
                             if(evento.getCode()== KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
                                 System.out.println("tecla enter en txt_apellidos");
                                 //fun_validar cedula
@@ -87,17 +87,42 @@ public class FXMLPantalla1 {
 
                         });
                         this.txt_cedula.requestFocus();
-        Mod_general.fun_detectarTecla(txt_cedula, KeyCode.ENTER,txt_apellidos);
-        Mod_general.fun_detectarTecla(txt_apellidos,KeyCode.ENTER,txt_nombres);
+                        Mod_general.fun_detectarTecla(txt_cedula, KeyCode.ENTER,txt_apellidos);
+                        Mod_general.fun_detectarTecla(txt_apellidos,KeyCode.ENTER,txt_nombres);
                         Mod_general.fun_detectarTecla(txt_nombres,KeyCode.ENTER,txt_direccion);
                         Mod_general.fun_detectarTecla(this.txt_direccion,KeyCode.ENTER,this.txt_telefono);
                         Mod_general.fun_detectarTecla(txt_telefono,KeyCode.ENTER,this.txt_correo);
                         Mod_general.fun_detectarTecla(txt_correo,  KeyCode.ENTER,this.btn_grabar);
 
 
-    @javafx.fxml.FXML
-    public void acc_btncancelar(ActionEvent actionEvent) {
-    }
+//    @javafx.fxml.FXML
+//    public void acc_btncancelar(ActionEvent actionEvent) {
+//    }
+//
+//    @javafx.fxml.FXML
+//    public void acc_txtapellidos(ActionEvent actionEvent) {
+//    }
+//
+//    @javafx.fxml.FXML
+//    public void acc_txtcedula(ActionEvent actionEvent) {
+//    }
+//
+//    @javafx.fxml.FXML
+//    public void acc_txtcorreo(ActionEvent actionEvent) {
+//    }
+//
+//    @javafx.fxml.FXML
+//    public void acc_txtnombres(ActionEvent actionEvent) {
+//    }
+//
+//    @javafx.fxml.FXML
+//    public void acc_txtelefono(ActionEvent actionEvent) {
+//    }
+//
+//    @javafx.fxml.FXML
+//    public void acc_btngrabar(ActionEvent actionEvent) {
+//    }
+
 
     @javafx.fxml.FXML
     public void acc_txtapellidos(ActionEvent actionEvent) {
@@ -105,6 +130,10 @@ public class FXMLPantalla1 {
 
     @javafx.fxml.FXML
     public void acc_txtcedula(ActionEvent actionEvent) {
+    }
+
+    @javafx.fxml.FXML
+    public void acc_btngrabar(ActionEvent actionEvent) {
     }
 
     @javafx.fxml.FXML
@@ -116,10 +145,9 @@ public class FXMLPantalla1 {
     }
 
     @javafx.fxml.FXML
-    public void acc_txtelefono(ActionEvent actionEvent) {
+    public void acc_btncancelar(ActionEvent actionEvent) {
     }
 
     @javafx.fxml.FXML
-    public void acc_btngrabar(ActionEvent actionEvent) {
+    public void acc_txtelefono(ActionEvent actionEvent) {
     }
-}

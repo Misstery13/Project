@@ -8,13 +8,22 @@
 
 <AnchorPane fx:id="ap_pantalla2" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.project.FXMLPantalla2">
    <children>
-      <Pane layoutX="-7.0" layoutY="286.0" prefHeight="114.0" prefWidth="608.0">
+      <Pane layoutY="286.0" prefHeight="114.0" prefWidth="600.0" style="-fx-background-color: #EDADC7;">
          <children>
-            <Button fx:id="btn_cancelar" layoutX="418.0" layoutY="29.0" mnemonicParsing="false" onAction="#acc_btncancelar" text="Cancelar">
+            <Button fx:id="btn_cancelar" layoutX="357.0" layoutY="29.0" mnemonicParsing="false" onAction="#acc_btncancelar" text="Cancelar">
                <graphic>
                   <ImageView fitHeight="54.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
                      <image>
                         <Image url="@../../../ICONS/multiply.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+            <Button fx:id="btn_grabar" layoutX="129.0" layoutY="29.0" mnemonicParsing="false" onAction="#acc_btngrabar" text="Grabar">
+               <graphic>
+                  <ImageView fitHeight="54.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../../../ICONS/diskette.png" />
                      </image>
                   </ImageView>
                </graphic>
