@@ -1,4 +1,6 @@
 package com.example.project;
+//AUTOR: DIANA MELENA
+// SOFTWARE
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
