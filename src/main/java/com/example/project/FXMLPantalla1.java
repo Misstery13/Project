@@ -14,7 +14,7 @@ import javafx.scene.layout.AnchorPane;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class FXMLPantalla1 {
+public class FXMLPantalla1 implements javafx.fxml.Initializable {
     @javafx.fxml.FXML
     private AnchorPane ap_pantalla1;
     @javafx.fxml.FXML
@@ -34,6 +34,7 @@ public class FXMLPantalla1 {
     @javafx.fxml.FXML
     private Button btn_grabar;
 
+    @Override
     public void initialize(URL url, ResourceBundle rb) {
         ap_pantalla1.sceneProperty().addListener(new ChangeListener<>() {
             @Override
