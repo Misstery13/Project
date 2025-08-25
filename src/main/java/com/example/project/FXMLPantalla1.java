@@ -125,17 +125,54 @@ public class FXMLPantalla1 {
 
     @javafx.fxml.FXML
     public void acc_btngrabar(ActionEvent actionEvent) {
+        if (txt_cedula.getText().trim().isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Campo requerido");
+            alert.setHeaderText(null);
+            alert.setContentText("La cédula es obligatoria.");
+            alert.showAndWait();
+            txt_cedula.requestFocus();
+            return;
+        }
+
+        if (txt_nombres.getText().trim().isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Campo requerido");
+            alert.setHeaderText(null);
+            alert.setContentText("El nombre es obligatorio.");
+            alert.showAndWait();
+            txt_nombres.requestFocus();
+            return;
+        }
+
+        if (txt_apellidos.getText().trim().isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Campo requerido");
+            alert.setHeaderText(null);
+            alert.setContentText("Los apellidos son obligatorios.");
+            alert.showAndWait();
+            txt_apellidos.requestFocus();
+            return;
+        }
+
+        // Crear el cliente con datos validados
         Cliente nuevoCliente = new Cliente(
-                txt_cedula.getText(),
-                txt_apellidos.getText(),
-                txt_nombres.getText(),
-                txt_direccion.getText(),
-                txt_telefono.getText(),
-                txt_correo.getText()
+                txt_cedula.getText().trim(),
+                txt_apellidos.getText().trim(),
+                txt_nombres.getText().trim(),
+                txt_direccion.getText().trim(),
+                txt_telefono.getText().trim(),
+                txt_correo.getText().trim()
         );
 
         ClienteManager.getInstance().agregarCliente(nuevoCliente);
-        System.out.println("Cliente agregado: " + nuevoCliente.getNombres() + " " + nuevoCliente.getApellidos());
+
+        // Debug para confirmar que se guardó
+        System.out.println("=== CLIENTE GUARDADO CON CTRL+G ===");
+        System.out.println("Cédula: " + nuevoCliente.getCedula());
+        System.out.println("Nombres: " + nuevoCliente.getNombres());
+        System.out.println("Apellidos: " + nuevoCliente.getApellidos());
+        System.out.println("Total clientes: " + ClienteManager.getInstance().getClientes().size());
 
         // Limpiar los campos después de guardar
         txt_cedula.clear();
@@ -150,5 +187,8 @@ public class FXMLPantalla1 {
         alert.setHeaderText(null);
         alert.setContentText("Cliente agregado exitosamente.");
         alert.showAndWait();
+
+        // Regresar el foco al primer campo
+        txt_cedula.requestFocus();
     }
 }
