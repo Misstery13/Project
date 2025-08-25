@@ -7,9 +7,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -31,6 +34,8 @@ public class FXMLReportes implements Initializable {
     private TableColumn<Cliente, String> col_direccion;
     @javafx.fxml.FXML
     private ChoiceBox chbox;
+    @javafx.fxml.FXML
+    private TextField txt_cliente;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -63,7 +68,9 @@ public class FXMLReportes implements Initializable {
         tabla_clientes.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
                 Cliente seleccionado = tabla_clientes.getSelectionModel().getSelectedItem();
-                if (seleccionado != null) {
+                if (seleccionado != null)
+                    System.out.println("click");
+                {
                     try {
                         AnchorPane pantalla1 = FXMLLoader.load(getClass().getResource("/com/example/project/FXMLpantalla1.fxml"));
                         // Obtener el controlador para cargar el cliente
@@ -87,5 +94,10 @@ public class FXMLReportes implements Initializable {
                 }
             }
         });
+        Stage newStage=new Stage();
+        newStage.initModality(Modality.APPLICATION_MODAL);
+        newStage.setResizable(false);
+
+
     }
 }
