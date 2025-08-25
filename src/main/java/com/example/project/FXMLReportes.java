@@ -31,7 +31,7 @@ public class FXMLReportes implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Configurar las columnas
+
         col_cedula.setCellValueFactory(new PropertyValueFactory<>("cedula"));
         col_apellidos.setCellValueFactory(new PropertyValueFactory<>("apellidos"));
         col_nombres.setCellValueFactory(new PropertyValueFactory<>("nombres"));
@@ -39,7 +39,7 @@ public class FXMLReportes implements Initializable {
         col_telefono.setCellValueFactory(new PropertyValueFactory<>("telefono"));
         col_correo.setCellValueFactory(new PropertyValueFactory<>("correo"));
 
-        // Obtener la instancia del manager y vincular los datos
+
         ClienteManager manager = ClienteManager.getInstance();
         tabla_clientes.setItems(manager.getClientes());
 
@@ -53,7 +53,7 @@ public class FXMLReportes implements Initializable {
             System.out.println("Primer cliente: " + manager.getClientes().get(0).getNombres());
         }
 
-        // Forzar actualización
+
         tabla_clientes.refresh();
 
         // Doble clic para editar en pantalla1
@@ -69,14 +69,13 @@ public class FXMLReportes implements Initializable {
                         FXMLPantalla1 controlador = loader.getController();
                         controlador.cargarClienteParaEdicion(seleccionado);
 
-                        // Reemplazar el centro del layout principal
-                        // Buscar el BorderPane principal por la escena actual
+
                         Scene scene = ((Node) event.getSource()).getScene();
                         HelloController controllerRoot = (HelloController) scene.getProperties().get("rootController");
                         if (controllerRoot != null) {
                             controllerRoot.setDataPane(pane);
                         } else {
-                            // Fallback: insertar directamente en el padre inmediato si es un contenedor esperado
+
                             ((AnchorPane) tabla_clientes.getParent()).getChildren().setAll(pane);
                         }
                     } catch (Exception e) {

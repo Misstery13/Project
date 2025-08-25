@@ -201,7 +201,7 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
 
             clienteEnEdicion = null;
         } else {
-            // Crear y agregar nuevo cliente
+
             Cliente nuevoCliente = new Cliente(
                     txt_cedula.getText().trim(),
                     txt_apellidos.getText().trim(),
@@ -226,14 +226,14 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
             alert.setContentText("Cliente agregado exitosamente.");
             alert.showAndWait();
         }
-        // Limpiar los campos después de guardar o actualizar
+
         txt_cedula.clear();
         txt_apellidos.clear();
         txt_nombres.clear();
         txt_direccion.clear();
         txt_telefono.clear();
         txt_correo.clear();
-        // Regresar el foco al primer campo
+
         txt_cedula.requestFocus();
     }
 }
