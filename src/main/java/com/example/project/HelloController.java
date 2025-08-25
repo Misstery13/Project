@@ -41,24 +41,42 @@ public class HelloController {
 
     @FXML
     public void acc_menuPantalla1(ActionEvent actionEvent) {
-        String pantalla= "/FXMLpantalla1.fxml";
+        String pantalla = "/com/example/project/FXMLpantalla1.fxml";
+        try {
+            AnchorPane a=fun_Animacion(pantalla);
+            setDataPane(a);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
     @FXML
     public void acc_btnpantalla2(ActionEvent actionEvent) throws IOException {
-        String pantalla = "/FXMLpantalla2.fxml";
+        String pantalla = "/com/example/project/FXMLpantalla2.fxml";
+        AnchorPane a = fun_Animacion(pantalla);
+        setDataPane(a);
+
     }
 
     @FXML
     public void acc_btnPantalla1(ActionEvent actionEvent) {
-        String pantalla="/hello-view.fxml";
+        String pantalla="/com/example/project/FXMLpantalla1.fxml";
+        try {
+            AnchorPane a=fun_Animacion(pantalla);
+            setDataPane(a);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
 
     }
 
     @FXML
-    public void acc_menuPantalla2(ActionEvent actionEvent) {
+    public void acc_menuPantalla2(ActionEvent actionEvent) throws  IOException {
+        String pantalla = "/com/example/project/FXMLpantalla2.fxml";
+        AnchorPane a = fun_Animacion(pantalla);
+        setDataPane(a);
     }
 
     public AnchorPane fun_Animacion(String url) throws IOException {
@@ -74,6 +92,6 @@ public class HelloController {
 
     public void setDataPane(Node node) {
         dataPane.getChildren().setAll(node);
-        dataPane.setPadding(new Insets(100,300,70,300));
+        dataPane.setPadding(new Insets(100,300,100,300));
     }
 }

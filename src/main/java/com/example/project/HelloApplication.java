@@ -12,14 +12,15 @@ import java.io.IOException;
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader loader = new FXMLLoader();
+//        FXMLLoader loader = new FXMLLoader();
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
-        Pane ventana = (Pane)loader.load();
+        Pane ventana = fxmlLoader.load();
         Scene scene=new Scene(ventana);
         stage.setScene(scene);
 //        stage.setResizable(true);
-        stage.getIcons().add(new Image("/ICONS/diskette.png"));
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/ICONS/diskette.png")));
         stage.setTitle("Sistema -Programacion Visual");
+//        stage.centerOnScreen();
         stage.setMaximized(true);
         stage.show();
     }

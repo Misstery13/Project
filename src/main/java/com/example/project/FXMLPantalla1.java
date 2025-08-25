@@ -1,6 +1,9 @@
 package com.example.project;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -31,123 +34,94 @@ public class FXMLPantalla1 {
     private Button btn_grabar;
 
     public void initialize(URL url, ResourceBundle rb) {
-        this.txt_cedula.setOnKeyPressed(evento->{
-            if(evento.getCode()== KeyCode.ENTER){
-                System.out.println("tecla enter en txt_cedula");
-                //fun_validar cedula
-                this.txt_apellidos.requestFocus();
+        ap_pantalla1.sceneProperty().addListener(new ChangeListener<>() {
+            @Override
+            public void changed(ObservableValue<? extends Scene> obs, javafx.scene.Scene oldScene, javafx.scene.Scene newScene) {
+                if (newScene != null) {
+                    newScene.setOnKeyPressed(event -> {
+                        if (event.isControlDown() && event.getCode() == KeyCode.G) {
+                            btn_grabar.fire();
+                        }
+                    });
+                }
+            }
+        });
+        txt_cedula.setOnKeyPressed(evento -> {
+            if (evento.getCode() == KeyCode.ENTER) {
+                txt_apellidos.requestFocus();
                 evento.consume();
             }
         });
-        this.txt_apellidos.setOnKeyPressed(evento->{
-            if(evento.getCode()== KeyCode.ENTER || evento.getCode() == KeyCode.TAB){
-                System.out.println("tecla enter en txt_cedula");
-                //fun_validar cedula
-                this.txt_nombres.requestFocus();
+
+
+        txt_apellidos.setOnKeyPressed(evento -> {
+            if (evento.getCode() == KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
+                txt_nombres.requestFocus();
                 evento.consume();
             }
-            //evento cuando pierde el focus
-        this.txt_cedula.focusedProperty().addListener((obs,oldVal,newVal) ->{
+        });
+
+        txt_nombres.setOnKeyPressed(evento -> {
+            if (evento.getCode() == KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
+                txt_direccion.requestFocus();
+                evento.consume();
+            }
+        });
+
+        txt_direccion.setOnKeyPressed(evento -> {
+            if (evento.getCode() == KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
+                txt_telefono.requestFocus();
+                evento.consume();
+            }
+        });
+
+        txt_telefono.setOnKeyPressed(evento -> {
+            if (evento.getCode() == KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
+                txt_correo.requestFocus();
+                evento.consume();
+            }
+        });
+
+        txt_correo.setOnKeyPressed(evento -> {
+            if (evento.getCode() == KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
+                btn_grabar.requestFocus();
+                evento.consume();
+            }
+        });
+
+        txt_cedula.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal) {
                 System.out.println("Validar desde el focus");
-
             }
+        });
 
-                this.txt_apellidos.setOnKeyPressed(evento->{
-                    if(evento.getCode()== KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
-                        System.out.println("tecla enter en txt_apellidos");
-                        //fun_validar cedula
-                        this.txt_direccion.requestFocus();
-                        evento.consume();
-                    }
-
-                    this.txt_direccion.setOnKeyPressed(evento->{
-                        if(evento.getCode()== KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
-                            System.out.println("tecla enter en txt_apellidos");
-                            //fun_validar cedula
-                            this.txt_telefono.requestFocus();
-                            evento.consume();
-                        }
-                        this.txt_telefono.setOnKeyPressed(evento->{
-                            if(evento.getCode()== KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
-                                System.out.println("tecla enter en txt_apellidos");
-                                //fun_validar cedula
-                                this.txt_correo.requestFocus();
-                                evento.consume();
-                            }
-
-                        });
-                        this.txt_correo.setOnKeyPressed(evento->{
-                            if(evento.getCode()== KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
-                                System.out.println("tecla enter en txt_apellidos");
-                                //fun_validar cedula
-                                this.btn_grabar.requestFocus();
-                                evento.consume();
-                            }
-
-                        });
-                        this.txt_cedula.requestFocus();
-                        Mod_general.fun_detectarTecla(txt_cedula, KeyCode.ENTER,txt_apellidos);
-                        Mod_general.fun_detectarTecla(txt_apellidos,KeyCode.ENTER,txt_nombres);
-                        Mod_general.fun_detectarTecla(txt_nombres,KeyCode.ENTER,txt_direccion);
-                        Mod_general.fun_detectarTecla(this.txt_direccion,KeyCode.ENTER,this.txt_telefono);
-                        Mod_general.fun_detectarTecla(txt_telefono,KeyCode.ENTER,this.txt_correo);
-                        Mod_general.fun_detectarTecla(txt_correo,  KeyCode.ENTER,this.btn_grabar);
-
-
-//    @javafx.fxml.FXML
-//    public void acc_btncancelar(ActionEvent actionEvent) {
-//    }
-//
-//    @javafx.fxml.FXML
-//    public void acc_txtapellidos(ActionEvent actionEvent) {
-//    }
-//
-//    @javafx.fxml.FXML
-//    public void acc_txtcedula(ActionEvent actionEvent) {
-//    }
-//
-//    @javafx.fxml.FXML
-//    public void acc_txtcorreo(ActionEvent actionEvent) {
-//    }
-//
-//    @javafx.fxml.FXML
-//    public void acc_txtnombres(ActionEvent actionEvent) {
-//    }
-//
-//    @javafx.fxml.FXML
-//    public void acc_txtelefono(ActionEvent actionEvent) {
-//    }
-//
-//    @javafx.fxml.FXML
-//    public void acc_btngrabar(ActionEvent actionEvent) {
-//    }
-
-
-    @javafx.fxml.FXML
-    public void acc_txtapellidos(ActionEvent actionEvent) {
+        // Si fun_detectarTecla solo acepta dos argumentos:
+        Mod_general.fun_detectarTecla(txt_cedula, KeyCode.ENTER, txt_apellidos);
+        Mod_general.fun_detectarTecla(txt_apellidos, KeyCode.ENTER, txt_nombres);
+        Mod_general.fun_detectarTecla(txt_nombres, KeyCode.ENTER, txt_direccion);
+        Mod_general.fun_detectarTecla(txt_direccion,KeyCode.ENTER, txt_telefono);
+        Mod_general.fun_detectarTecla(txt_telefono,KeyCode.ENTER, txt_correo);
+        Mod_general.fun_detectarTecla(txt_correo,KeyCode.ENTER, btn_grabar);
     }
 
     @javafx.fxml.FXML
-    public void acc_txtcedula(ActionEvent actionEvent) {
-    }
+    public void acc_btncancelar(ActionEvent actionEvent) {}
 
     @javafx.fxml.FXML
-    public void acc_btngrabar(ActionEvent actionEvent) {
-    }
+    public void acc_txtapellidos(ActionEvent actionEvent) {}
 
     @javafx.fxml.FXML
-    public void acc_txtcorreo(ActionEvent actionEvent) {
-    }
+    public void acc_txtcedula(ActionEvent actionEvent) {}
 
     @javafx.fxml.FXML
-    public void acc_txtnombres(ActionEvent actionEvent) {
-    }
+    public void acc_txtcorreo(ActionEvent actionEvent) {}
 
     @javafx.fxml.FXML
-    public void acc_btncancelar(ActionEvent actionEvent) {
-    }
+    public void acc_txtnombres(ActionEvent actionEvent) {}
 
     @javafx.fxml.FXML
-    public void acc_txtelefono(ActionEvent actionEvent) {
-    }
+    public void acc_txtelefono(ActionEvent actionEvent) {}
+
+    @javafx.fxml.FXML
+    public void acc_btngrabar(ActionEvent actionEvent) {}
+}

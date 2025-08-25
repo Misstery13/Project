@@ -13,6 +13,22 @@ public class FXMLPantalla2 {
     @javafx.fxml.FXML
     private Button btn_grabar;
 
+    public void initialize(java.net.URL url, java.util.ResourceBundle resourceBundle) {
+        ap_pantalla2.sceneProperty().addListener(new javafx.beans.value.ChangeListener<>() {
+            @Override
+            public void changed(javafx.beans.value.ObservableValue<? extends javafx.scene.Scene> obs, javafx.scene.Scene oldScene, javafx.scene.Scene newScene) {
+                if (newScene != null) {
+                    newScene.setOnKeyPressed(event -> {
+                        if (event.isControlDown() && event.getCode() == javafx.scene.input.KeyCode.G) {
+                            btn_grabar.fire();
+
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     @javafx.fxml.FXML
     public void acc_btncancelar(ActionEvent actionEvent) {
         try {
