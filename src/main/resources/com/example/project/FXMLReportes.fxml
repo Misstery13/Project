@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0"
-            xmlns="http://javafx.com/javafx/24.0.1"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.example.project.FXMLReportes">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.project.FXMLReportes">
 
     <children>
-        <TableView fx:id="tabla_clientes" layoutX="50.0" layoutY="50.0"
-                   prefHeight="300.0" prefWidth="500.0">
+        <TableView fx:id="tabla_clientes" layoutX="65.0" layoutY="111.0" prefHeight="239.0" prefWidth="485.0">
 
             <columns>
                 <TableColumn fx:id="col_cedula" prefWidth="80.0" text="Cédula" />
@@ -23,5 +18,7 @@
             </columns>
 
         </TableView>
+      <ChoiceBox fx:id="chbox" layoutX="225.0" layoutY="49.0" prefWidth="150.0"   />
+      <Label layoutX="255.0" layoutY="25.0" text="BUSQUEDA POR:" />
     </children>
 </AnchorPane>

@@ -4,6 +4,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -28,6 +29,8 @@ public class FXMLReportes implements Initializable {
     private TableColumn<Cliente, String> col_cedula;
     @javafx.fxml.FXML
     private TableColumn<Cliente, String> col_direccion;
+    @javafx.fxml.FXML
+    private ChoiceBox chbox;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
