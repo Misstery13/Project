@@ -34,6 +34,8 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
     @javafx.fxml.FXML
     private Button btn_grabar;
 
+    private Cliente clienteEnEdicion;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         ap_pantalla1.sceneProperty().addListener(new ChangeListener<>() {
@@ -106,6 +108,19 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
         Mod_general.fun_detectarTecla(txt_correo,KeyCode.ENTER, btn_grabar);
     }
 
+    public void cargarClienteParaEdicion(Cliente cliente) {
+        this.clienteEnEdicion = cliente;
+        if (cliente != null) {
+            txt_cedula.setText(cliente.getCedula());
+            txt_apellidos.setText(cliente.getApellidos());
+            txt_nombres.setText(cliente.getNombres());
+            txt_direccion.setText(cliente.getDireccion());
+            txt_telefono.setText(cliente.getTelefono());
+            txt_correo.setText(cliente.getCorreo());
+            txt_cedula.requestFocus();
+        }
+    }
+
     @javafx.fxml.FXML
     public void acc_btncancelar(ActionEvent actionEvent) {}
 
@@ -164,39 +179,60 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
             return;
         }
 
-        // Crear el cliente con datos validados
-        Cliente nuevoCliente = new Cliente(
-                txt_cedula.getText().trim(),
-                txt_apellidos.getText().trim(),
-                txt_nombres.getText().trim(),
-                txt_direccion.getText().trim(),
-                txt_telefono.getText().trim(),
-                txt_correo.getText().trim()
-        );
+        if (clienteEnEdicion != null) {
+            // Actualizar cliente existente
+            clienteEnEdicion.setCedula(txt_cedula.getText().trim());
+            clienteEnEdicion.setApellidos(txt_apellidos.getText().trim());
+            clienteEnEdicion.setNombres(txt_nombres.getText().trim());
+            clienteEnEdicion.setDireccion(txt_direccion.getText().trim());
+            clienteEnEdicion.setTelefono(txt_telefono.getText().trim());
+            clienteEnEdicion.setCorreo(txt_correo.getText().trim());
 
-        ClienteManager.getInstance().agregarCliente(nuevoCliente);
+            System.out.println("=== CLIENTE ACTUALIZADO ===");
+            System.out.println("Cédula: " + clienteEnEdicion.getCedula());
+            System.out.println("Nombres: " + clienteEnEdicion.getNombres());
+            System.out.println("Apellidos: " + clienteEnEdicion.getApellidos());
 
-        // Debug para confirmar que se guardó
-        System.out.println("=== CLIENTE GUARDADO CON CTRL+G ===");
-        System.out.println("Cédula: " + nuevoCliente.getCedula());
-        System.out.println("Nombres: " + nuevoCliente.getNombres());
-        System.out.println("Apellidos: " + nuevoCliente.getApellidos());
-        System.out.println("Total clientes: " + ClienteManager.getInstance().getClientes().size());
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Éxito");
+            alert.setHeaderText(null);
+            alert.setContentText("Cliente actualizado exitosamente.");
+            alert.showAndWait();
 
-        // Limpiar los campos después de guardar
+            clienteEnEdicion = null;
+        } else {
+            // Crear y agregar nuevo cliente
+            Cliente nuevoCliente = new Cliente(
+                    txt_cedula.getText().trim(),
+                    txt_apellidos.getText().trim(),
+                    txt_nombres.getText().trim(),
+                    txt_direccion.getText().trim(),
+                    txt_telefono.getText().trim(),
+                    txt_correo.getText().trim()
+            );
+
+            ClienteManager.getInstance().agregarCliente(nuevoCliente);
+
+            // Debug para confirmar que se guardó
+            System.out.println("=== CLIENTE GUARDADO CON CTRL+G ===");
+            System.out.println("Cédula: " + nuevoCliente.getCedula());
+            System.out.println("Nombres: " + nuevoCliente.getNombres());
+            System.out.println("Apellidos: " + nuevoCliente.getApellidos());
+            System.out.println("Total clientes: " + ClienteManager.getInstance().getClientes().size());
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Éxito");
+            alert.setHeaderText(null);
+            alert.setContentText("Cliente agregado exitosamente.");
+            alert.showAndWait();
+        }
+        // Limpiar los campos después de guardar o actualizar
         txt_cedula.clear();
         txt_apellidos.clear();
         txt_nombres.clear();
         txt_direccion.clear();
         txt_telefono.clear();
         txt_correo.clear();
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Éxito");
-        alert.setHeaderText(null);
-        alert.setContentText("Cliente agregado exitosamente.");
-        alert.showAndWait();
-
         // Regresar el foco al primer campo
         txt_cedula.requestFocus();
     }

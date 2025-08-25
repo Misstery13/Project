@@ -40,6 +40,15 @@ public class HelloController {
     @FXML
     private Button btn_tabla;
 
+    public void initialize() {
+        // Al estar disponible la escena, registrar este controlador como referencia en las propiedades
+        dataPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.getProperties().put("rootController", this);
+            }
+        });
+    }
+
 
     @FXML
     public void acc_menuPantalla1(ActionEvent actionEvent) {
