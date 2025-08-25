@@ -83,7 +83,18 @@
           </TitledPane>
           <TitledPane animated="false" prefHeight="222.0" prefWidth="146.0" text="Reportes">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Button fx:id="btn_tabla" alignment="BOTTOM_CENTER" layoutX="21.0" layoutY="14.0" mnemonicParsing="false" onAction="#acc_btntabla" text="Tabla">
+                           <graphic>
+                              <ImageView fitHeight="33.0" fitWidth="29.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../../../ICONS/user-list-svgrepo-com.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                     </children></AnchorPane>
             </content>
           </TitledPane>
         </panes>

@@ -4,6 +4,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -123,5 +124,31 @@ public class FXMLPantalla1 {
     public void acc_txtelefono(ActionEvent actionEvent) {}
 
     @javafx.fxml.FXML
-    public void acc_btngrabar(ActionEvent actionEvent) {}
+    public void acc_btngrabar(ActionEvent actionEvent) {
+        Cliente nuevoCliente = new Cliente(
+                txt_cedula.getText(),
+                txt_apellidos.getText(),
+                txt_nombres.getText(),
+                txt_direccion.getText(),
+                txt_telefono.getText(),
+                txt_correo.getText()
+        );
+
+        ClienteManager.getInstance().agregarCliente(nuevoCliente);
+        System.out.println("Cliente agregado: " + nuevoCliente.getNombres() + " " + nuevoCliente.getApellidos());
+
+        // Limpiar los campos después de guardar
+        txt_cedula.clear();
+        txt_apellidos.clear();
+        txt_nombres.clear();
+        txt_direccion.clear();
+        txt_telefono.clear();
+        txt_correo.clear();
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Éxito");
+        alert.setHeaderText(null);
+        alert.setContentText("Cliente agregado exitosamente.");
+        alert.showAndWait();
+    }
 }

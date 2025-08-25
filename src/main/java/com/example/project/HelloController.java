@@ -37,6 +37,8 @@ public class HelloController {
     private Button btn_pantalla1;
     @FXML
     private Label lbl_horaActual;
+    @FXML
+    private Button btn_tabla;
 
 
     @FXML
@@ -93,5 +95,16 @@ public class HelloController {
     public void setDataPane(Node node) {
         dataPane.getChildren().setAll(node);
         dataPane.setPadding(new Insets(100,300,100,300));
+    }
+
+    @FXML
+    public void acc_btntabla(ActionEvent actionEvent) {
+        String pantalla="/com/example/project/FXMLReportes.fxml";
+        try {
+            AnchorPane a=fun_Animacion(pantalla);
+            setDataPane(a);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
