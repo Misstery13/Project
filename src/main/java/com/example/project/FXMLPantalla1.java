@@ -126,33 +126,41 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
 
     @javafx.fxml.FXML
     public void acc_btngrabar(ActionEvent actionEvent) {
+        StringBuilder missing = new StringBuilder();
+        javafx.scene.Node firstMissing = null;
         if (txt_cedula.getText().trim().isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Campo requerido");
-            alert.setHeaderText(null);
-            alert.setContentText("La cédula es obligatoria.");
-            alert.showAndWait();
-            txt_cedula.requestFocus();
-            return;
+            missing.append("- Cédula\n");
+            if (firstMissing == null) firstMissing = txt_cedula;
         }
-
-        if (txt_nombres.getText().trim().isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Campo requerido");
-            alert.setHeaderText(null);
-            alert.setContentText("El nombre es obligatorio.");
-            alert.showAndWait();
-            txt_nombres.requestFocus();
-            return;
-        }
-
         if (txt_apellidos.getText().trim().isEmpty()) {
+            missing.append("- Apellidos\n");
+            if (firstMissing == null) firstMissing = txt_apellidos;
+        }
+        if (txt_nombres.getText().trim().isEmpty()) {
+            missing.append("- Nombres\n");
+            if (firstMissing == null) firstMissing = txt_nombres;
+        }
+        if (txt_direccion.getText().trim().isEmpty()) {
+            missing.append("- Dirección\n");
+            if (firstMissing == null) firstMissing = txt_direccion;
+        }
+        if (txt_telefono.getText().trim().isEmpty()) {
+            missing.append("- Teléfono\n");
+            if (firstMissing == null) firstMissing = txt_telefono;
+        }
+        if (txt_correo.getText().trim().isEmpty()) {
+            missing.append("- Correo\n");
+            if (firstMissing == null) firstMissing = txt_correo;
+        }
+        if (missing.length() > 0) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("Campo requerido");
-            alert.setHeaderText(null);
-            alert.setContentText("Los apellidos son obligatorios.");
+            alert.setTitle("Campos requeridos");
+            alert.setHeaderText("Completa los campos antes de grabar");
+            alert.setContentText("Faltan completar los siguientes campos:\n" + missing.toString());
             alert.showAndWait();
-            txt_apellidos.requestFocus();
+            if (firstMissing != null) {
+                firstMissing.requestFocus();
+            }
             return;
         }
 
