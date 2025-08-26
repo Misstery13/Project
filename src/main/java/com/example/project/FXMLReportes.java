@@ -1,5 +1,7 @@
 package com.example.project;
 
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -33,7 +35,7 @@ public class FXMLReportes implements Initializable {
     @javafx.fxml.FXML
     private TableColumn<Cliente, String> col_direccion;
     @javafx.fxml.FXML
-    private ChoiceBox chbox;
+    private ChoiceBox<String> chbox;
     @javafx.fxml.FXML
     private TextField txt_cliente;
 
@@ -49,7 +51,21 @@ public class FXMLReportes implements Initializable {
 
 
         ClienteManager manager = ClienteManager.getInstance();
-        tabla_clientes.setItems(manager.getClientes());
+//        tabla_clientes.setItems(manager.getClientes());
+        FilteredList<Cliente> filtrados = new FilteredList<>(manager.getClientes(), c -> true);
+        chbox.getItems().setAll("Cédula", "Apellidos", "Nombres");
+        chbox.getSelectionModel().selectFirst();
+
+        txt_cliente.textProperty().addListener((observable, oldValue, newValue) -> {
+            aplicarFiltro(filtrados, chbox.getValue(), newValue);
+        });
+        chbox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            aplicarFiltro(filtrados, newValue, txt_cliente.getText());
+        });
+
+        SortedList<Cliente> ordenados = new SortedList<>(filtrados);
+        ordenados.comparatorProperty().bind(tabla_clientes.comparatorProperty());
+        tabla_clientes.setItems(ordenados);
 
         // Debug mejorado
         System.out.println("=== INICIALIZANDO TABLA ===");
@@ -94,10 +110,28 @@ public class FXMLReportes implements Initializable {
                 }
             }
         });
-        Stage newStage=new Stage();
-        newStage.initModality(Modality.APPLICATION_MODAL);
-        newStage.setResizable(false);
+//        Stage newStage=new Stage();
+//        newStage.initModality(Modality.APPLICATION_MODAL);
+//        newStage.setResizable(false);
 
 
+    }
+
+    private void aplicarFiltro(FilteredList<Cliente> filtrados, String campo, String texto) {
+        String criterio = texto == null ? "" : texto.trim().toLowerCase();
+        filtrados.setPredicate(cliente -> {
+            if (criterio.isEmpty()) return true;
+            String valor;
+            if ("Cédula".equals(campo)) {
+                valor = cliente.getCedula();
+            } else if ("Apellidos".equals(campo)) {
+                valor = cliente.getApellidos();
+            } else {
+                valor = cliente.getNombres();
+            }
+            return valor != null && valor.toLowerCase().contains(criterio);
+
+
+        });
     }
 }
