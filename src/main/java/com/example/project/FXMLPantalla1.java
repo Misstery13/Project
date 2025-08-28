@@ -10,6 +10,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -122,7 +123,14 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
     }
 
     @javafx.fxml.FXML
-    public void acc_btncancelar(ActionEvent actionEvent) {}
+    public void acc_btncancelar(ActionEvent actionEvent) {
+        try {
+            Stage stage=(Stage) this.btn_cancelar.getScene().getWindow();
+            stage.close();
+        } catch (Exception e) {
+
+        }
+    }
 
     @javafx.fxml.FXML
     public void acc_txtapellidos(ActionEvent actionEvent) {}
