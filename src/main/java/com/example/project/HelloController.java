@@ -1,6 +1,8 @@
 package com.example.project;
 
 import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -10,12 +12,17 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
+
+//import java.util.stream.Node;
 
 public class HelloController {
 
@@ -25,8 +32,6 @@ public class HelloController {
     private MenuItem menu_Pantalla2;
     @FXML
     private Button btn_pantalla2;
-    @FXML
-    private VBox dataPane;
     @FXML
     private Label lbl_version;
     @FXML
@@ -39,6 +44,8 @@ public class HelloController {
     private Label lbl_horaActual;
     @FXML
     private Button btn_tabla;
+    @FXML
+    private StackPane dataPane;
 
     public void initialize() {
         // Al estar disponible la escena, registrar este controlador como referencia en las propiedades
@@ -47,6 +54,24 @@ public class HelloController {
                 newScene.getProperties().put("rootController", this);
             }
         });
+        actualizarFechaHora();
+        //hora dinamica
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> actualizarFechaHora()));
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+    }
+
+
+    private void actualizarFechaHora() {
+        LocalDateTime ahora = LocalDateTime.now();
+
+        // Formatear fecha (dd/MM/yy)
+        DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yy");
+        lbl_fecha.setText(ahora.format(formatoFecha));
+
+        // Formatear hora (HH:mm:ss)
+        DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("HH:mm:ss");
+        lbl_horaActual.setText(ahora.format(formatoHora));
     }
 
 
@@ -103,8 +128,25 @@ public class HelloController {
 
     public void setDataPane(Node node) {
         dataPane.getChildren().setAll(node);
-        dataPane.setPadding(new Insets(100,300,100,300));
+
+        // Configurar el StackPane para centrar
+        dataPane.setAlignment(javafx.geometry.Pos.CENTER);
+
+        if (node instanceof AnchorPane) {
+            AnchorPane anchorPane = (AnchorPane) node;
+
+            // Establecer tamaño fijo y centrar
+            anchorPane.setPrefSize(600, 400);
+            anchorPane.setMaxSize(600, 400);
+            anchorPane.setMinSize(600, 400);
+
+            // Limpiar cualquier anclaje que pueda interferir
+            AnchorPane.clearConstraints(anchorPane);
+        }
     }
+
+
+
 
     @FXML
     public void acc_btntabla(ActionEvent actionEvent) {

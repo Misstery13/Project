@@ -6,7 +6,8 @@
 
 }
 
-#ap_pantalla1 {
+#p1,
+#pr{
     -fx-background-color: #f0f8ff;
     -fx-background-radius: 15;
     -fx-border-color: #D199B6;
