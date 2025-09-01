@@ -27,7 +27,7 @@
       <Label layoutX="159.0" layoutY="301.0" text="Telefono:" />
       <TextField fx:id="txt_correo" layoutX="234.0" layoutY="333.0" onAction="#acc_txtcorreo" prefHeight="25.0" prefWidth="208.0" />
       <Label layoutX="159.0" layoutY="337.0" text="Correo:" />
-      <Button id="clean" fx:id="btn_cancelar" alignment="CENTER_RIGHT" contentDisplay="TOP" layoutX="330.0" layoutY="380.0" mnemonicParsing="false" onAction="#acc_btncancelar" text="Cancelar" textAlignment="CENTER">
+      <Button id="clean" fx:id="btn_cancelar" alignment="CENTER_RIGHT" contentDisplay="TOP" layoutX="330.0" layoutY="360.0" mnemonicParsing="false" onAction="#acc_btncancelar" text="Cancelar" textAlignment="CENTER">
          <graphic>
             <ImageView fitHeight="54.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
                <image>
@@ -36,7 +36,7 @@
             </ImageView>
          </graphic>
       </Button>
-      <Button id="save" fx:id="btn_grabar" alignment="BOTTOM_CENTER" contentDisplay="TOP" layoutX="206.0" layoutY="380.0" mnemonicParsing="false" onAction="#acc_btngrabar" text="Grabar">
+      <Button id="save" fx:id="btn_grabar" alignment="BOTTOM_CENTER" contentDisplay="TOP" layoutX="206.0" layoutY="360.0" mnemonicParsing="false" onAction="#acc_btngrabar" text="Grabar">
          <graphic>
             <ImageView fitHeight="54.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
                <image>

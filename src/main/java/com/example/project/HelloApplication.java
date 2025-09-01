@@ -15,7 +15,7 @@ public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         // Inicializar el sistema de idiomas
-        LanguageManager.initialize();
+        Idiomas.inicializar();
         
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
         Pane ventana = fxmlLoader.load();
@@ -23,7 +23,7 @@ public class HelloApplication extends Application {
         stage.setScene(scene);
         
         stage.getIcons().add(new Image(getClass().getResourceAsStream("/ICONS/shop-svgrepo-com.png")));
-        stage.setTitle(LanguageManager.getMessage("window.title"));
+        stage.setTitle(Idiomas.obtenerMensaje("window.title"));
         stage.setMaximized(true);
         stage.show();
     }

@@ -6,7 +6,6 @@ import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -14,16 +13,13 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.IOException;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ResourceBundle;
 
 //import java.util.stream.Node;
 
@@ -57,10 +53,10 @@ public class HelloController {
     private MenuItem menu_english;
 
     public void initialize() {
-        // Inicializar el sistema de idiomas
-        LanguageManager.initialize();
+
+        Idiomas.inicializar();
         
-        // Al estar disponible la escena, registrar este controlador como referencia en las propiedades
+
         dataPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
                 newScene.getProperties().put("rootController", this);
@@ -156,13 +152,11 @@ public class HelloController {
             AnchorPane.clearConstraints(anchorPane);
             
             // Aplicar traducciones a la nueva pantalla
-            LanguageManager.applyLanguageToSecondaryScreen(anchorPane);
+            Idiomas.aplicarIdiomaAPantallaSecundaria(anchorPane);
         }
     }
 
-
-
-
+    
     @FXML
     public void acc_btntabla(ActionEvent actionEvent) {
         String pantalla="/com/example/project/FXMLReportes.fxml";
@@ -177,39 +171,39 @@ public class HelloController {
     // Métodos para cambiar idioma
     @FXML
     public void acc_changeToSpanish(ActionEvent actionEvent) {
-        changeLanguage("es");
+        cambiarIdioma("es");
     }
     
     @FXML
     public void acc_changeToEnglish(ActionEvent actionEvent) {
-        changeLanguage("en");
+        cambiarIdioma("en");
     }
     
-    private void changeLanguage(String language) {
+    private void cambiarIdioma(String idioma) {
         // Cambiar el idioma
-        LanguageManager.changeLanguage(language);
+        Idiomas.cambiarIdioma(idioma);
         
         // Obtener el BorderPane raíz
-        BorderPane rootPane = (BorderPane) dataPane.getScene().getRoot();
+        BorderPane panelRaiz = (BorderPane) dataPane.getScene().getRoot();
         
         // Aplicar el nuevo idioma a toda la interfaz
-        LanguageManager.applyLanguageToUI(rootPane);
+        Idiomas.aplicarIdiomaAInterfaz(panelRaiz);
         
         // Aplicar idioma a la pantalla secundaria actual si existe
-        applyLanguageToCurrentSecondaryScreen();
+        aplicarIdiomaAPantallaSecundariaActual();
         
         // Actualizar el título de la ventana
         Stage stage = (Stage) dataPane.getScene().getWindow();
-        stage.setTitle(LanguageManager.getMessage("window.title"));
+        stage.setTitle(Idiomas.obtenerMensaje("window.title"));
     }
     
-    private void applyLanguageToCurrentSecondaryScreen() {
+    private void aplicarIdiomaAPantallaSecundariaActual() {
         // Verificar si hay una pantalla secundaria cargada
         if (!dataPane.getChildren().isEmpty()) {
-            Node currentNode = dataPane.getChildren().get(0);
-            if (currentNode instanceof AnchorPane) {
-                AnchorPane currentScreen = (AnchorPane) currentNode;
-                LanguageManager.applyLanguageToSecondaryScreen(currentScreen);
+            Node nodoActual = dataPane.getChildren().get(0);
+            if (nodoActual instanceof AnchorPane) {
+                AnchorPane pantallaActual = (AnchorPane) nodoActual;
+                Idiomas.aplicarIdiomaAPantallaSecundaria(pantallaActual);
             }
         }
     }
