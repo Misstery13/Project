@@ -20,7 +20,7 @@ public class HelloApplication extends Application {
         Scene scene=new Scene(ventana);
         stage.setScene(scene);
 //        stage.setResizable(true);
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/ICONS/diskette.png")));
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/ICONS/shop-svgrepo-com.png")));
         stage.setTitle("Sistema -Programacion Visual");
 //        stage.centerOnScreen();
         stage.setMaximized(true);
