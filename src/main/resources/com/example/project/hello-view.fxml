@@ -38,6 +38,12 @@
               <MenuItem mnemonicParsing="false" text="About" />
             </items>
           </Menu>
+          <Menu fx:id="menu_language" mnemonicParsing="false" text="Idioma">
+            <items>
+              <MenuItem fx:id="menu_spanish" mnemonicParsing="false" onAction="#acc_changeToSpanish" text="Español" />
+              <MenuItem fx:id="menu_english" mnemonicParsing="false" onAction="#acc_changeToEnglish" text="English" />
+            </items>
+          </Menu>
         </menus>
       </MenuBar>
    </top>

@@ -14,15 +14,16 @@ import java.io.IOException;
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-//        FXMLLoader loader = new FXMLLoader();
+        // Inicializar el sistema de idiomas
+        LanguageManager.initialize();
+        
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
         Pane ventana = fxmlLoader.load();
-        Scene scene=new Scene(ventana);
+        Scene scene = new Scene(ventana);
         stage.setScene(scene);
-//        stage.setResizable(true);
+        
         stage.getIcons().add(new Image(getClass().getResourceAsStream("/ICONS/shop-svgrepo-com.png")));
-        stage.setTitle("Sistema -Programacion Visual");
-//        stage.centerOnScreen();
+        stage.setTitle(LanguageManager.getMessage("window.title"));
         stage.setMaximized(true);
         stage.show();
     }
