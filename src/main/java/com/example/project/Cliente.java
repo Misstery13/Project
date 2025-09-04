@@ -4,6 +4,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 public class Cliente {
+    private final int id_cliente; //auto incremento
     private final StringProperty cedula;
     private final StringProperty apellidos;
     private final StringProperty nombres;
