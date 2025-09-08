@@ -58,6 +58,7 @@ public class HelloController {
         if (Session.isActive()) {
             lbl_nombreUsuario.setText(Session.getUsername());
         }
+        aplicarPermisosPorRol();
 
         dataPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
@@ -69,6 +70,19 @@ public class HelloController {
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> actualizarFechaHora()));
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
+    }
+
+    private void aplicarPermisosPorRol() {
+        if (!Session.isActive()) {
+            return;
+        }
+        Session.Role rol = Session.getRole();
+        boolean esBodeguero = rol == Session.Role.BODEGUERO;
+
+        // Menú y botones de ejemplo: restringir Pantalla 2 y Reportes para bodeguero
+        if (menu_Pantalla2 != null) menu_Pantalla2.setDisable(esBodeguero);
+        if (btn_pantalla2 != null) btn_pantalla2.setDisable(esBodeguero);
+        if (btn_tabla != null) btn_tabla.setDisable(esBodeguero);
     }
 
 
