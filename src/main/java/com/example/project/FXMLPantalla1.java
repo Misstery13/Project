@@ -211,6 +211,7 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
         } else {
 
             Cliente nuevoCliente = new Cliente(
+                    0, // id_cliente se asigna automáticamente
                     txt_cedula.getText().trim(),
                     txt_apellidos.getText().trim(),
                     txt_nombres.getText().trim(),

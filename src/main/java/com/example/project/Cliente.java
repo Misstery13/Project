@@ -4,7 +4,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 public class Cliente {
-    private final int id_cliente; //auto incremento
+    private int id_cliente; //auto incremento
     private final StringProperty cedula;
     private final StringProperty apellidos;
     private final StringProperty nombres;
@@ -26,7 +26,7 @@ public class Cliente {
     public int getId_cliente() { return id_cliente; }
     public void setId_cliente(int id_cliente) { this.id_cliente = id_cliente; }
     public int id_clienteProperty() { return id_cliente; }
-    
+
     public String getCedula() { return cedula.get(); }
     public void setCedula(String cedula) { this.cedula.set(cedula); }
     public StringProperty cedulaProperty() { return cedula; }
