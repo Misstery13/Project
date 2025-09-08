@@ -55,7 +55,9 @@ public class HelloController {
     public void initialize() {
 
         Idiomas.inicializar();
-        
+        if (Session.isActive()) {
+            lbl_nombreUsuario.setText(Session.getUsername());
+        }
 
         dataPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
@@ -156,7 +158,7 @@ public class HelloController {
         }
     }
 
-    
+
     @FXML
     public void acc_btntabla(ActionEvent actionEvent) {
         String pantalla="/com/example/project/FXMLReportes.fxml";

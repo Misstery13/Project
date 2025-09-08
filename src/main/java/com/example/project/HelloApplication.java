@@ -17,14 +17,14 @@ public class HelloApplication extends Application {
         // Inicializar el sistema de idiomas
         Idiomas.inicializar();
         
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("FXMLLogin.fxml"));
         Pane ventana = fxmlLoader.load();
         Scene scene = new Scene(ventana);
         stage.setScene(scene);
         
         stage.getIcons().add(new Image(getClass().getResourceAsStream("/ICONS/shop-svgrepo-com.png")));
         stage.setTitle(Idiomas.obtenerMensaje("window.title"));
-        stage.setMaximized(true);
+        stage.setMaximized(false);
         stage.show();
     }
 }
