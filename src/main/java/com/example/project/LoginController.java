@@ -20,25 +20,25 @@ public class LoginController {
     @FXML
     private PasswordField txtPassword;
     @FXML
-    private ComboBox<Session.Role> cbRol;
+    private ComboBox<sesion.Role> cbRol;
     @FXML
     private Button btnIngresar;
 
     public void initialize() {
-        cbRol.getItems().setAll(Session.Role.values());
-        cbRol.getSelectionModel().select(Session.Role.BODEGUERO);
+        cbRol.getItems().setAll(sesion.Role.values());
+        cbRol.getSelectionModel().select(sesion.Role.BODEGUERO);
     }
 
     @FXML
     public void acc_ingresar(ActionEvent e) throws IOException {
         String usuario = txtUsuario.getText() == null ? "" : txtUsuario.getText().trim();
-        Session.Role rol = cbRol.getValue();
+        sesion.Role rol = cbRol.getValue();
 
         if (usuario.isEmpty() || rol == null) {
             return;
         }
 
-        Session.start(usuario, rol);
+        sesion.start(usuario, rol);
 
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
         Pane ventana = fxmlLoader.load();

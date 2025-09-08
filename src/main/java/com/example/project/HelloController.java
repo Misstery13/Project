@@ -51,12 +51,14 @@ public class HelloController {
     private MenuItem menu_spanish;
     @FXML
     private MenuItem menu_english;
+    @FXML
+    private Button btn_facturar;
 
     public void initialize() {
 
         Idiomas.inicializar();
-        if (Session.isActive()) {
-            lbl_nombreUsuario.setText(Session.getUsername());
+        if (sesion.isActive()) {
+            lbl_nombreUsuario.setText(sesion.getUsername());
         }
         aplicarPermisosPorRol();
 
@@ -73,11 +75,11 @@ public class HelloController {
     }
 
     private void aplicarPermisosPorRol() {
-        if (!Session.isActive()) {
+        if (!sesion.isActive()) {
             return;
         }
-        Session.Role rol = Session.getRole();
-        boolean esBodeguero = rol == Session.Role.BODEGUERO;
+        sesion.Role rol = sesion.getRole();
+        boolean esBodeguero = rol == sesion.Role.BODEGUERO;
 
         // Menú y botones de ejemplo: restringir Pantalla 2 y Reportes para bodeguero
         if (menu_Pantalla2 != null) menu_Pantalla2.setDisable(esBodeguero);
@@ -223,4 +225,38 @@ public class HelloController {
             }
         }
     }
+
+    @FXML
+    public void acc_Facturar(ActionEvent actionEvent) {
+        String pantalla="/com/example/project/FXMLFactura.fxml";
+        try {
+            AnchorPane a=fun_Animacion(pantalla);
+            setDataPane(a);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setDataPaneFactura(Node node) {
+        dataPane.getChildren().setAll(node);
+
+        // Configurar el StackPane para centrar
+        dataPane.setAlignment(javafx.geometry.Pos.CENTER);
+
+        if (node instanceof AnchorPane) {
+            AnchorPane anchorPane = (AnchorPane) node;
+
+            // Establecer tamaño fijo y centrar
+            anchorPane.setPrefSize(600, 400);
+            anchorPane.setMaxSize(600, 400);
+            anchorPane.setMinSize(600, 400);
+
+            // Limpiar cualquier anclaje que pueda interferir
+            AnchorPane.clearConstraints(anchorPane);
+
+            // Aplicar traducciones a la nueva pantalla
+            Idiomas.aplicarIdiomaAPantallaSecundaria(anchorPane);
+        }
+    }
+
 }

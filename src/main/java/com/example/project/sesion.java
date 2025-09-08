@@ -1,6 +1,6 @@
 package com.example.project;
 
-public final class Session {
+public final class sesion {
     public enum Role {
         ADMINISTRADOR,
         BODEGUERO
@@ -9,7 +9,7 @@ public final class Session {
     private static String username;
     private static Role role;
 
-    private Session() {}
+    private sesion() {}
 
     public static void start(String user, Role selectedRole) {
         username = user;
