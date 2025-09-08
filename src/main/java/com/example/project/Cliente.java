@@ -12,7 +12,8 @@ public class Cliente {
     private final StringProperty telefono;
     private final StringProperty correo;
 
-    public Cliente(String cedula, String apellidos, String nombres, String direccion, String telefono, String correo) {
+    public Cliente(int id_cliente, String cedula, String apellidos, String nombres, String direccion, String telefono, String correo) {
+        this.id_cliente = id_cliente;
         this.cedula = new SimpleStringProperty(cedula);
         this.apellidos = new SimpleStringProperty(apellidos);
         this.nombres = new SimpleStringProperty(nombres);
@@ -22,6 +23,10 @@ public class Cliente {
     }
 
     // Getters para el TableView
+    public int getId_cliente() { return id_cliente; }
+    public void setId_cliente(int id_cliente) { this.id_cliente = id_cliente; }
+    public int id_clienteProperty() { return id_cliente; }
+    
     public String getCedula() { return cedula.get(); }
     public void setCedula(String cedula) { this.cedula.set(cedula); }
     public StringProperty cedulaProperty() { return cedula; }
