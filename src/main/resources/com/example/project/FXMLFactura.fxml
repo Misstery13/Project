@@ -11,7 +11,7 @@
 <?import javafx.scene.text.Font?>
 
 
-<AnchorPane fx:id="datapane_factura" prefHeight="582.0" prefWidth="838.0" style="-fx-background-color: #32a852;" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Factura">
+<AnchorPane fx:id="datapane_factura" prefHeight="582.0" prefWidth="838.0" style="-fx-background-color: #32a852;" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.project.FacturaController">
    <children>
       <Pane layoutX="22.0" layoutY="14.0" prefHeight="156.0" prefWidth="795.0">
          <children>

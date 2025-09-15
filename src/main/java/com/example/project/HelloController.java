@@ -161,10 +161,9 @@ public class HelloController {
         if (node instanceof AnchorPane) {
             AnchorPane anchorPane = (AnchorPane) node;
 
-            // Establecer tamaño fijo y centrar
-            anchorPane.setPrefSize(600, 400);
-            anchorPane.setMaxSize(600, 400);
-            anchorPane.setMinSize(600, 400);
+            // Hacer que la pantalla se adapte al contenedor
+            anchorPane.prefWidthProperty().bind(dataPane.widthProperty());
+            anchorPane.prefHeightProperty().bind(dataPane.heightProperty());
 
             // Limpiar cualquier anclaje que pueda interferir
             AnchorPane.clearConstraints(anchorPane);
@@ -246,10 +245,9 @@ public class HelloController {
         if (node instanceof AnchorPane) {
             AnchorPane anchorPane = (AnchorPane) node;
 
-            // Establecer tamaño fijo y centrar
-            anchorPane.setPrefSize(600, 400);
-            anchorPane.setMaxSize(600, 400);
-            anchorPane.setMinSize(600, 400);
+            // Hacer que la pantalla de factura se adapte al contenedor
+            anchorPane.prefWidthProperty().bind(dataPane.widthProperty());
+            anchorPane.prefHeightProperty().bind(dataPane.heightProperty());
 
             // Limpiar cualquier anclaje que pueda interferir
             AnchorPane.clearConstraints(anchorPane);
