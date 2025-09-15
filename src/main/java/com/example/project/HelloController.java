@@ -161,9 +161,12 @@ public class HelloController {
         if (node instanceof AnchorPane) {
             AnchorPane anchorPane = (AnchorPane) node;
 
-            // Hacer que la pantalla se adapte al contenedor
-            anchorPane.prefWidthProperty().bind(dataPane.widthProperty());
-            anchorPane.prefHeightProperty().bind(dataPane.heightProperty());
+            // Asegurar tamaño fijo para pantallas estándar
+            anchorPane.prefWidthProperty().unbind();
+            anchorPane.prefHeightProperty().unbind();
+            anchorPane.setPrefSize(600, 400);
+            anchorPane.setMaxSize(600, 400);
+            anchorPane.setMinSize(600, 400);
 
             // Limpiar cualquier anclaje que pueda interferir
             AnchorPane.clearConstraints(anchorPane);
@@ -230,30 +233,39 @@ public class HelloController {
         String pantalla="/com/example/project/FXMLFactura.fxml";
         try {
             AnchorPane a=fun_Animacion(pantalla);
-            setDataPane(a);
+            setDataPaneFactura(a);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void setDataPaneFactura(Node node) {
-        dataPane.getChildren().setAll(node);
-
         // Configurar el StackPane para centrar
         dataPane.setAlignment(javafx.geometry.Pos.CENTER);
 
         if (node instanceof AnchorPane) {
             AnchorPane anchorPane = (AnchorPane) node;
 
-            // Hacer que la pantalla de factura se adapte al contenedor
-            anchorPane.prefWidthProperty().bind(dataPane.widthProperty());
-            anchorPane.prefHeightProperty().bind(dataPane.heightProperty());
+            // Mantener la pantalla de factura con su tamaño de diseño y centrarla
+            anchorPane.prefWidthProperty().unbind();
+            anchorPane.prefHeightProperty().unbind();
+            anchorPane.setMaxSize(AnchorPane.USE_PREF_SIZE, AnchorPane.USE_PREF_SIZE);
 
             // Limpiar cualquier anclaje que pueda interferir
             AnchorPane.clearConstraints(anchorPane);
 
+            // Envolver en un StackPane que ocupa todo el contenedor y centra el contenido
+            StackPane wrapper = new StackPane(anchorPane);
+            wrapper.setAlignment(javafx.geometry.Pos.CENTER);
+            wrapper.prefWidthProperty().bind(dataPane.widthProperty());
+            wrapper.prefHeightProperty().bind(dataPane.heightProperty());
+
+            dataPane.getChildren().setAll(wrapper);
+
             // Aplicar traducciones a la nueva pantalla
             Idiomas.aplicarIdiomaAPantallaSecundaria(anchorPane);
+        } else {
+            dataPane.getChildren().setAll(node);
         }
     }
 

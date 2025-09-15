@@ -35,7 +35,7 @@
       </Pane>
       <Pane layoutX="22.0" layoutY="184.0" prefHeight="232.0" prefWidth="795.0">
          <children>
-            <TableView layoutX="42.0" layoutY="14.0" prefHeight="200.0" prefWidth="597.0">
+            <TableView fx:id="tabla_detalle" layoutX="42.0" layoutY="14.0" prefHeight="200.0" prefWidth="597.0">
               <columns>
                 <TableColumn fx:id="col_codigo" prefWidth="75.0" text="CODIGO" />
                 <TableColumn fx:id="col_descripcion" prefWidth="134.0" text="DESCRIPCION" />
@@ -44,6 +44,7 @@
                   <TableColumn prefWidth="77.0" text="APLICA IVA" visible="false" />
                   <TableColumn prefWidth="60.0" text="IVA" visible="false" />
                   <TableColumn fx:id="col_total" prefWidth="90.0" text="TOTAL" />
+                  <TableColumn fx:id="col_acciones" prefWidth="100.0" text="ACCIONES" />
               </columns>
             </TableView>
             <Button layoutX="691.0" layoutY="14.0" mnemonicParsing="false" text="Grabar">
