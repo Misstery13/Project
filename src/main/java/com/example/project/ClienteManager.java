@@ -9,6 +9,16 @@ public class ClienteManager {
 
     private ClienteManager() {
         clientes = FXCollections.observableArrayList();
+        // Seed de cliente por defecto para pruebas de interfaz
+        clientes.add(new Cliente(
+                1,
+                "2450128257",
+                "Melena",
+                "Diana",
+                "Santa Elena",
+                "0963610580",
+                "diana.melena25@gmail.com"
+        ));
     }
 
     public static ClienteManager getInstance() {

@@ -13,7 +13,16 @@ public class Factura {
     private float fac_iva;
     private float fac_descuento;
     private float fac_total;
-    private int usr_id;
+    private String fe_clave;
+    private String fe_fecha_aut;
+    private int usr_id_crea;
+    private int usr_id_modifica;
+    private String mac_crea;
+    private String mac_modifica;
+    private String fecha_creacion;
+    private String hora_creacion;
+    private String fecha_modificacion;
+    private String hora_modificacion;
     private String fac_estado;
 
 }

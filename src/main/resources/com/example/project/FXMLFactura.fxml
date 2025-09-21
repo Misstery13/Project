@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
@@ -11,43 +12,48 @@
 <?import javafx.scene.text.Font?>
 
 
-<AnchorPane fx:id="datapane_factura" prefHeight="582.0" prefWidth="838.0" style="-fx-background-color: #32a852;" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.project.FacturaController">
+<AnchorPane fx:id="datapane_factura" prefHeight="582.0" prefWidth="838.0" style="-fx-background-color: #32a852;" stylesheets="@estilos.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.project.FacturaController">
    <children>
       <Pane layoutX="22.0" layoutY="14.0" prefHeight="156.0" prefWidth="795.0">
          <children>
             <Label layoutX="25.0" layoutY="14.0" text="#Factura:" />
-            <TextField layoutX="96.0" layoutY="10.0" />
+            <TextField fx:id="txt_numFactura" layoutX="96.0" layoutY="10.0" />
             <Label layoutX="489.0" layoutY="10.0" text="Fecha:" />
-            <TextField layoutX="560.0" layoutY="6.0" />
+            <TextField fx:id="txt_fecha" layoutX="560.0" layoutY="6.0" />
             <Label layoutX="61.0" layoutY="41.0" text="CI/RUC:" />
-            <TextField layoutX="57.0" layoutY="67.0" prefHeight="25.0" prefWidth="192.0" />
+            <TextField fx:id="txt_ci" layoutX="57.0" layoutY="67.0" prefHeight="25.0" prefWidth="192.0" />
             <Label layoutX="269.0" layoutY="45.0" text="Nombres:" />
-            <TextField layoutX="269.0" layoutY="70.0" prefHeight="25.0" prefWidth="217.0" />
+            <TextField fx:id="txt_nombres" layoutX="269.0" layoutY="70.0" prefHeight="25.0" prefWidth="217.0" />
             <Label layoutX="502.0" layoutY="45.0" text="Apellidos:" />
-            <TextField layoutX="502.0" layoutY="71.0" prefHeight="25.0" prefWidth="192.0" />
+            <TextField fx:id="txt_apellidos" layoutX="502.0" layoutY="71.0" prefHeight="25.0" prefWidth="192.0" />
             <Label layoutX="57.0" layoutY="98.0" text="Telefono:" />
-            <TextField layoutX="57.0" layoutY="124.0" prefHeight="25.0" prefWidth="192.0" />
+            <TextField fx:id="txt_telefono" layoutX="57.0" layoutY="124.0" prefHeight="25.0" prefWidth="192.0" />
             <Label layoutX="269.0" layoutY="101.0" text="Correo:" />
-            <TextField layoutX="269.0" layoutY="127.0" prefHeight="25.0" prefWidth="217.0" />
+            <TextField fx:id="txt_correo" layoutX="269.0" layoutY="127.0" prefHeight="25.0" prefWidth="217.0" />
             <Label layoutX="510.0" layoutY="102.0" text="Direccion:" />
-            <TextField layoutX="502.0" layoutY="127.0" prefHeight="25.0" prefWidth="259.0" />
+            <TextField fx:id="txt_direccion" layoutX="502.0" layoutY="127.0" prefHeight="25.0" prefWidth="259.0" />
+            <Label layoutX="25.0" layoutY="14.0" />
+            <ComboBox fx:id="combo_cliente" layoutX="269.0" layoutY="10.0" prefWidth="200.0" promptText="Seleccione cliente" />
          </children>
       </Pane>
       <Pane layoutX="22.0" layoutY="184.0" prefHeight="232.0" prefWidth="795.0">
          <children>
-            <TableView fx:id="tabla_detalle" layoutX="42.0" layoutY="14.0" prefHeight="200.0" prefWidth="597.0">
+            <ComboBox fx:id="combo_producto" layoutX="42.0" layoutY="14.0" prefWidth="220.0" promptText="Seleccione producto" />
+            <TextField fx:id="txt_cantidad" layoutX="270.0" layoutY="14.0" prefWidth="80.0" promptText="Cant." />
+            <Button fx:id="btn_agregar" layoutX="360.0" layoutY="14.0" mnemonicParsing="false" text="Agregar" />
+            <TableView fx:id="tabla_detalle" layoutX="42.0" layoutY="52.0" prefHeight="170.0" prefWidth="597.0">
               <columns>
                 <TableColumn fx:id="col_codigo" prefWidth="75.0" text="CODIGO" />
                 <TableColumn fx:id="col_descripcion" prefWidth="134.0" text="DESCRIPCION" />
                   <TableColumn fx:id="col_cantidad" prefWidth="85.0" text="CANTIDAD" />
                   <TableColumn fx:id="col_pvp" prefWidth="77.0" text="PVP" />
-                  <TableColumn prefWidth="77.0" text="APLICA IVA" visible="false" />
-                  <TableColumn prefWidth="60.0" text="IVA" visible="false" />
+                  <TableColumn fx:id="col_aplicaIva" prefWidth="100.0" text="APLICA IVA" />
+                  <TableColumn fx:id="col_iva" prefWidth="60.0" text="IVA" />
                   <TableColumn fx:id="col_total" prefWidth="90.0" text="TOTAL" />
-                  <TableColumn fx:id="col_acciones" prefWidth="100.0" text="ACCIONES" />
+                  <TableColumn fx:id="col_acciones" prefWidth="140.0" text="APLICAR DESCUENTO" />
               </columns>
             </TableView>
-            <Button layoutX="691.0" layoutY="14.0" mnemonicParsing="false" text="Grabar">
+            <Button layoutX="691.0" layoutY="14.0" mnemonicParsing="false" text="Grabar" onAction="#acc_grabarFactura">
                <graphic>
                   <ImageView fx:id="btn_grabar" fitHeight="32.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true" />
                </graphic>
@@ -57,7 +63,7 @@
                   <ImageView fx:id="btn_cancelar" fitHeight="32.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true" />
                </graphic>
             </Button>
-            <Button fx:id="btn_imprimir" layoutX="691.0" layoutY="114.0" mnemonicParsing="false" text="Imprimir">
+            <Button fx:id="btn_imprimir" layoutX="691.0" layoutY="114.0" mnemonicParsing="false" text="Imprimir" onAction="#acc_imprimirFactura">
                <graphic>
                   <ImageView fitHeight="32.0" fitWidth="22.0" pickOnBounds="true" preserveRatio="true" />
                </graphic>
@@ -74,30 +80,25 @@
             <Font name="System Bold" size="12.0" />
          </font>
       </Label>
-      <TextField layoutX="637.0" layoutY="416.0" />
-      <Label layoutX="551.0" layoutY="453.0" text="SubTotal(10)">
-         <font>
-            <Font name="System Bold" size="12.0" />
-         </font>
-      </Label>
-      <TextField layoutX="637.0" layoutY="449.0" />
+      <TextField fx:id="txt_subtotal1" layoutX="637.0" layoutY="416.0" />
+
       <Label layoutX="551.0" layoutY="487.0" text="Iva">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
       </Label>
-      <TextField layoutX="637.0" layoutY="483.0" />
+      <TextField fx:id="txt_iva" layoutX="637.0" layoutY="483.0" />
       <Label layoutX="551.0" layoutY="519.0" text="Descuento">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
       </Label>
-      <TextField layoutX="637.0" layoutY="515.0" />
+      <TextField fx:id="txt_descuento" layoutX="637.0" layoutY="515.0" />
       <Label layoutX="551.0" layoutY="553.0" text="Total">
          <font>
             <Font name="System Bold" size="12.0" />
          </font>
       </Label>
-      <TextField layoutX="637.0" layoutY="549.0" />
+      <TextField fx:id="txt_total" layoutX="637.0" layoutY="549.0" />
    </children>
 </AnchorPane>
