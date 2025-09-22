@@ -7,15 +7,16 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
 
 <AnchorPane fx:id="ap_pantalla2" prefHeight="400.0" prefWidth="600.0" stylesheets="@estilos.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.project.FXMLPantalla2">
    <children>
-      <Label layoutX="31.0" layoutY="27.0" text="Código" />
-      <TextField fx:id="txt_codigo" layoutX="110.0" layoutY="23.0" prefWidth="150.0" />
-      <Label layoutX="31.0" layoutY="64.0" text="Nombre" />
-      <TextField fx:id="txt_nombre" layoutX="110.0" layoutY="60.0" prefWidth="300.0" />
-      <Label layoutX="31.0" layoutY="100.0" text="PVP" />
-      <TextField fx:id="txt_pvp" layoutX="110.0" layoutY="96.0" prefWidth="100.0" />
+      <Label layoutX="111.0" layoutY="106.0" text="Código" />
+      <TextField fx:id="txt_codigo" layoutX="190.0" layoutY="102.0" prefWidth="150.0" />
+      <Label layoutX="111.0" layoutY="143.0" text="Nombre" />
+      <TextField fx:id="txt_nombre" layoutX="190.0" layoutY="139.0" prefWidth="300.0" />
+      <Label layoutX="111.0" layoutY="179.0" text="PVP" />
+      <TextField fx:id="txt_pvp" layoutX="190.0" layoutY="175.0" prefWidth="100.0" />
       <Pane layoutY="286.0" prefHeight="114.0" prefWidth="600.0" style="-fx-background-color: #EDADC7;">
          <children>
             <Button fx:id="btn_cancelar" layoutX="357.0" layoutY="29.0" mnemonicParsing="false" onAction="#acc_btncancelar" text="Cancelar">
@@ -38,5 +39,10 @@
             </Button>
          </children>
       </Pane>
+      <Label layoutX="164.0" layoutY="31.0" text="REGISTRO DE PRODUCTOS" textAlignment="CENTER">
+         <font>
+            <Font name="System Bold" size="20.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>

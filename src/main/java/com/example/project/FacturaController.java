@@ -9,6 +9,17 @@ import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ChoiceDialog;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.image.ImageView;
 import javafx.scene.Node;
@@ -62,7 +73,9 @@ public class FacturaController {
     private TableColumn<DetalleFactura, String> col_acciones;
 
     @FXML
-    private ComboBox<Producto> combo_producto;
+    private TextField txt_buscar_producto;
+    @FXML
+    private Button btn_buscar_producto;
     @FXML
     private TextField txt_cantidad;
     @FXML
@@ -77,7 +90,8 @@ public class FacturaController {
     private Button btn_agregar;
 
     private final javafx.collections.ObservableList<DetalleFactura> detalles = FXCollections.observableArrayList();
-    @FXML private ComboBox<Cliente> combo_cliente;
+    @FXML private TextField txt_buscar_cliente;
+    @FXML private Button btn_buscar_cliente;
     @FXML private TextField txt_numFactura;
     @FXML private TextField txt_fecha;
     @FXML private TextField txt_ci;
@@ -95,41 +109,27 @@ public class FacturaController {
         if (txt_numFactura != null) {
             txt_numFactura.setText(generarNumeroFactura());
         }
-        // Cargar productos al iniciar (si se requiere mostrar en tabla de detalle)
-        ObservableList<Producto> productos = ProductManager.getInstance().getProductos();
-        System.out.println("Productos disponibles: " + productos.size());
-
-        if (combo_producto != null) {
-            combo_producto.setItems(productos);
-            combo_producto.setConverter(new javafx.util.StringConverter<>() {
-                @Override
-                public String toString(Producto p) { return p == null ? "" : p.getProd_cod() + " - " + p.getProd_nombre(); }
-                @Override
-                public Producto fromString(String s) { return null; }
-            });
+        // Configurar búsqueda de productos
+        if (btn_buscar_producto != null) {
+            btn_buscar_producto.setOnAction(e -> buscarProducto());
+        }
+        
+        // Permitir búsqueda al presionar Enter en el campo de búsqueda de productos
+        if (txt_buscar_producto != null) {
+            txt_buscar_producto.setOnAction(e -> buscarProducto());
         }
 
         if (tabla_detalle != null) {
             tabla_detalle.setItems(detalles);
         }
-        // Cargar clientes
-        ObservableList<Cliente> clientes = ClienteManager.getInstance().getClientes();
-        if (combo_cliente != null) {
-            combo_cliente.setItems(clientes);
-            combo_cliente.setConverter(new javafx.util.StringConverter<>() {
-                @Override public String toString(Cliente c) { return c == null ? "" : c.getCedula() + " - " + c.getApellidos() + " " + c.getNombres(); }
-                @Override public Cliente fromString(String s) { return null; }
-            });
-            combo_cliente.getSelectionModel().selectedItemProperty().addListener((obs, o, c) -> {
-                if (c != null) {
-                    txt_ci.setText(c.getCedula());
-                    txt_nombres.setText(c.getNombres());
-                    txt_apellidos.setText(c.getApellidos());
-                    txt_telefono.setText(c.getTelefono());
-                    txt_correo.setText(c.getCorreo());
-                    txt_direccion.setText(c.getDireccion());
-                }
-            });
+        // Configurar búsqueda de clientes
+        if (btn_buscar_cliente != null) {
+            btn_buscar_cliente.setOnAction(e -> buscarCliente());
+        }
+        
+        // Permitir búsqueda al presionar Enter en el campo de búsqueda de clientes
+        if (txt_buscar_cliente != null) {
+            txt_buscar_cliente.setOnAction(e -> buscarCliente());
         }
 
         // Configurar columnas simples si existen
@@ -150,7 +150,7 @@ public class FacturaController {
                         d.setAplicaIva(aplica);
                         // Recalcular IVA y total de la fila
                         float base = d.getCantidad() * d.getProd_pvp();
-                        float iva = aplica ? base * 0.12f : 0f;
+                        float iva = aplica ? base * 0.15f : 0f;
                         d.setTotal(base + iva);
                         getTableView().refresh();
                         recalcularTotales();
@@ -175,8 +175,9 @@ public class FacturaController {
             col_iva.setCellValueFactory(data -> {
                 DetalleFactura d = data.getValue();
                 float base = d.getCantidad() * d.getProd_pvp();
-                float baseConDesc = base * (1 - d.getDescuento());
-                float iva = d.isAplicaIva() ? baseConDesc * 0.12f : 0f;
+                float descuentoItem = base * d.getDescuento();
+                float baseConDesc = base - descuentoItem;
+                float iva = d.isAplicaIva() ? baseConDesc * 0.15f : 0f;
                 return new SimpleStringProperty(String.format("%.2f", iva));
             });
         }
@@ -202,8 +203,9 @@ public class FacturaController {
                         };
                         d.setDescuento(pct);
                         float base = d.getCantidad() * d.getProd_pvp();
-                        float baseConDesc = base * (1 - d.getDescuento());
-                        float iva = d.isAplicaIva() ? baseConDesc * 0.12f : 0f;
+                        float descuentoItem = base * d.getDescuento();
+                        float baseConDesc = base - descuentoItem;
+                        float iva = d.isAplicaIva() ? baseConDesc * 0.15f : 0f;
                         d.setTotal(baseConDesc + iva);
                         getTableView().refresh();
                         recalcularTotales();
@@ -244,23 +246,42 @@ public class FacturaController {
         return prefijo + "-" + fecha + "-" + hora;
     }
 
+    private Producto productoSeleccionado = null;
+    
+    // Constantes para impresión térmica de 80mm
+    private static final int THERMAL_WIDTH = 42; // Ancho máximo recomendado para 80mm
+    private static final String ESC = "\u001B"; // Carácter de escape
+    private static final String LF = "\n"; // Line feed
+    private static final String CR = "\r"; // Carriage return
+    private static final String FF = "\f"; // Form feed
+    private static final String GS = "\u001D"; // Group separator
+    private static final String CAN = "\u0018"; // Cancel
+    
     private void agregarProductoADetalle() {
-        Producto sel = combo_producto.getValue();
-        if (sel == null) { System.out.println("Seleccione un producto"); return; }
+        if (productoSeleccionado == null) { 
+            mostrarAlerta(AlertType.WARNING, "Producto requerido", "Busque y seleccione un producto primero"); 
+            return; 
+        }
+        
         float cant = 1f;
         try { if (txt_cantidad != null) cant = Float.parseFloat(txt_cantidad.getText()); } catch (NumberFormatException ignored) {}
 
         DetalleFactura d = new DetalleFactura();
-        d.setPro_id(sel.getProd_id());
-        d.setProd_cod(sel.getProd_cod());
-        d.setProd_nombre(sel.getProd_nombre());
+        d.setPro_id(productoSeleccionado.getProd_id());
+        d.setProd_cod(productoSeleccionado.getProd_cod());
+        d.setProd_nombre(productoSeleccionado.getProd_nombre());
         d.setCantidad(cant);
-        d.setProd_pvp(sel.getProd_pvp());
+        d.setProd_pvp(productoSeleccionado.getProd_pvp());
         d.setAplicaIva(false);
-        float base = cant * sel.getProd_pvp();
+        float base = cant * productoSeleccionado.getProd_pvp();
         float iva = d.isAplicaIva() ? base * 0.15f : 0f;
         d.setTotal(base + iva);
         detalles.add(d);
+
+        // Limpiar campos después de agregar
+        if (txt_buscar_producto != null) txt_buscar_producto.clear();
+        if (txt_cantidad != null) txt_cantidad.setText("1");
+        productoSeleccionado = null;
 
         recalcularTotales();
     }
@@ -268,25 +289,34 @@ public class FacturaController {
     private void recalcularTotales() {
         float subtotalSinIva = 0f;
         float totalIva = 0f;
+        float totalDescuento = 0f;
+        
         for (DetalleFactura d : detalles) {
             float base = d.getCantidad() * d.getProd_pvp();
-            float baseConDesc = base * (1 - d.getDescuento());
-            float iva = d.isAplicaIva() ? baseConDesc * 0.15f : 0f;
+            float descuentoItem = base * d.getDescuento(); // Calcular descuento del item
+            float baseConDesc = base - descuentoItem; // Base después del descuento
+            float iva = d.isAplicaIva() ? baseConDesc * 0.15f : 0f; // IVA sobre base con descuento
+            
             subtotalSinIva += baseConDesc;
             totalIva += iva;
+            totalDescuento += descuentoItem; // Sumar descuento del item al total
         }
-        float descuento = 0f;
-        float total = subtotalSinIva + totalIva - descuento;
+        
+        float total = subtotalSinIva + totalIva;
 
         if (txt_subtotal1 != null) txt_subtotal1.setText(String.format("%.2f", subtotalSinIva));
         if (txt_iva != null) txt_iva.setText(String.format("%.2f", totalIva));
-        if (txt_descuento != null) txt_descuento.setText(String.format("%.2f", descuento));
+        if (txt_descuento != null) txt_descuento.setText(String.format("%.2f", totalDescuento));
         if (txt_total != null) txt_total.setText(String.format("%.2f", total));
     }
 
     @FXML
     private void acc_grabarFactura() {
-        if (combo_cliente == null || combo_cliente.getValue() == null) { mostrarAlerta(AlertType.WARNING, "Cliente requerido", "Seleccione un cliente"); return; }
+        // Verificar que se haya seleccionado un cliente (campos llenos)
+        if (txt_ci == null || txt_ci.getText() == null || txt_ci.getText().isBlank()) { 
+            mostrarAlerta(AlertType.WARNING, "Cliente requerido", "Busque y seleccione un cliente primero"); 
+            return; 
+        }
         if (detalles.isEmpty()) { mostrarAlerta(AlertType.WARNING, "Detalle vacío", "Agregue al menos un producto"); return; }
         if (txt_numFactura != null && (txt_numFactura.getText() == null || txt_numFactura.getText().isBlank())) { mostrarAlerta(AlertType.WARNING, "Número de factura", "Ingrese un número de factura"); return; }
 
@@ -295,6 +325,23 @@ public class FacturaController {
 
     @FXML
     private void acc_imprimirFactura() {
+        // Mostrar diálogo para elegir tipo de impresión
+        ChoiceDialog<String> printDialog = new ChoiceDialog<>("Térmica (80mm)", 
+            "Térmica (80mm)", "Estándar (A4)");
+        printDialog.setTitle("Tipo de Impresión");
+        printDialog.setHeaderText("Seleccione el tipo de impresión");
+        printDialog.setContentText("Tipo:");
+        
+        printDialog.showAndWait().ifPresent(tipo -> {
+            if ("Térmica (80mm)".equals(tipo)) {
+                imprimirFacturaTermica();
+            } else {
+                imprimirFacturaEstandar();
+            }
+        });
+    }
+    
+    private void imprimirFacturaEstandar() {
         Node printable = crearContenidoImprimible();
         Printer printer = Printer.getDefaultPrinter();
         PrinterJob job = PrinterJob.createPrinterJob(printer);
@@ -319,6 +366,68 @@ public class FacturaController {
         boolean success = job.printPage(printable);
         if (success) job.endJob();
         printable.getTransforms().remove(transform);
+    }
+    
+    private void imprimirFacturaTermica() {
+        try {
+            String contenidoTermico = generarContenidoTermico();
+            mostrarPrevisualizacionTermica(contenidoTermico);
+                
+        } catch (Exception e) {
+            mostrarAlerta(AlertType.ERROR, "Error de Impresión", 
+                "Error al generar contenido térmico: " + e.getMessage());
+        }
+    }
+    
+    private void mostrarPrevisualizacionTermica(String contenido) {
+        // Crear diálogo de previsualización
+        Dialog<Void> previewDialog = new Dialog<>();
+        previewDialog.setTitle("Previsualización - Impresión Térmica (80mm)");
+        previewDialog.setHeaderText("Vista previa del formato para impresora térmica");
+        
+        // Crear área de texto con scroll
+        TextArea textArea = new TextArea(contenido);
+        textArea.setEditable(false);
+        textArea.setWrapText(false);
+        textArea.setFont(Font.font("Courier New", 12)); // Fuente monospace
+        textArea.setPrefRowCount(25);
+        textArea.setPrefColumnCount(50);
+        
+        // Crear scroll pane
+        ScrollPane scrollPane = new ScrollPane(textArea);
+        scrollPane.setPrefSize(600, 500);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
+        
+        // Crear layout
+        VBox content = new VBox(10);
+        content.getChildren().addAll(
+            new javafx.scene.control.Label("Formato optimizado para impresora térmica de 80mm:"),
+            scrollPane
+        );
+        content.setPadding(new Insets(10));
+        
+        previewDialog.getDialogPane().setContent(content);
+        
+        // Agregar botones
+        ButtonType imprimirButton = new ButtonType("Imprimir", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelarButton = new ButtonType("Cancelar", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
+        previewDialog.getDialogPane().getButtonTypes().addAll(imprimirButton, cancelarButton);
+        
+        // Configurar botón imprimir
+        Button imprimirBtn = (Button) previewDialog.getDialogPane().lookupButton(imprimirButton);
+        imprimirBtn.setOnAction(e -> {
+            // Aquí puedes agregar la lógica real de impresión
+            // Por ahora solo mostramos un mensaje
+            mostrarAlerta(AlertType.INFORMATION, "Impresión", 
+                "Enviando a impresora térmica...\n\n" +
+                "Para implementación real, conecta la impresora térmica\n" +
+                "y envía el contenido por puerto serie/USB.");
+            previewDialog.close();
+        });
+        
+        // Mostrar diálogo
+        previewDialog.showAndWait();
     }
 
     private void mostrarAlerta(AlertType tipo, String titulo, String contenido) {
@@ -368,7 +477,7 @@ public class FacturaController {
         );
         int r = 1;
         for (DetalleFactura d : detalles) {
-            String ivaStr = String.format("%.2f", (d.isAplicaIva() ? d.getCantidad()*d.getProd_pvp()*0.12f : 0f));
+            String ivaStr = String.format("%.2f", (d.isAplicaIva() ? d.getCantidad()*d.getProd_pvp()*0.15f : 0f));
             gpItems.addRow(r++,
                     new Label(nullToEmpty(d.getProd_cod())),
                     new Label(nullToEmpty(d.getProd_nombre())),
@@ -399,4 +508,252 @@ public class FacturaController {
     private String safeText(TextField tf) { return tf == null ? "" : nullToEmpty(tf.getText()); }
     private Label bold(String s) { Label l = new Label(s); l.setStyle("-fx-font-weight: bold;"); return l; }
     private String nullToEmpty(String s) { return s == null ? "" : s; }
+    
+    private String generarContenidoTermico() {
+        StringBuilder sb = new StringBuilder();
+        
+        // Inicializar impresora
+        sb.append(ESC).append("@"); // Reset printer
+        sb.append(ESC).append("a").append((char)1); // Centrar texto
+        
+        // Encabezado de la empresa
+        sb.append(centrarTexto("FACTURA")).append(LF);
+        sb.append(centrarTexto("SISTEMA DE VENTAS")).append(LF);
+        sb.append(centrarTexto("================================")).append(LF);
+        sb.append(LF);
+        
+        // Datos de la factura
+        sb.append(ESC).append("a").append((char)0); // Alinear izquierda
+        sb.append("Factura: ").append(safeText(txt_numFactura)).append(LF);
+        sb.append("Fecha: ").append(safeText(txt_fecha)).append(LF);
+        sb.append("================================").append(LF);
+        sb.append(LF);
+        
+        // Datos del cliente
+        sb.append("CLIENTE:").append(LF);
+        sb.append("CI/RUC: ").append(safeText(txt_ci)).append(LF);
+        sb.append("Nombre: ").append(safeText(txt_nombres)).append(" ").append(safeText(txt_apellidos)).append(LF);
+        sb.append("Tel: ").append(safeText(txt_telefono)).append(LF);
+        sb.append("Email: ").append(safeText(txt_correo)).append(LF);
+        sb.append("Dir: ").append(truncarTexto(safeText(txt_direccion), THERMAL_WIDTH - 5)).append(LF);
+        sb.append("================================").append(LF);
+        sb.append(LF);
+        
+        // Encabezado de productos
+        sb.append(ESC).append("E"); // Texto en negrita
+        sb.append(String.format("%-8s %-12s %4s %8s %8s", "COD", "DESC", "CANT", "PVP", "TOTAL")).append(LF);
+        sb.append(ESC).append("F"); // Texto normal
+        sb.append("----------------------------------------").append(LF);
+        
+        // Detalles de productos
+        for (DetalleFactura d : detalles) {
+            String codigo = truncarTexto(d.getProd_cod(), 8);
+            String descripcion = truncarTexto(d.getProd_nombre(), 12);
+            String cantidad = String.format("%.0f", d.getCantidad());
+            String pvp = String.format("%.2f", d.getProd_pvp());
+            String total = String.format("%.2f", d.getTotal());
+            
+            sb.append(String.format("%-8s %-12s %4s %8s %8s", codigo, descripcion, cantidad, pvp, total)).append(LF);
+            
+            // Mostrar descuento si aplica
+            if (d.getDescuento() > 0) {
+                String descuentoPct = String.format("%.0f%%", d.getDescuento() * 100);
+                String descuentoVal = String.format("%.2f", d.getCantidad() * d.getProd_pvp() * d.getDescuento());
+                sb.append("  Descuento ").append(descuentoPct).append(": $").append(descuentoVal).append(LF);
+            }
+            
+            // Mostrar IVA si aplica
+            if (d.isAplicaIva()) {
+                float iva = d.getCantidad() * d.getProd_pvp() * (1 - d.getDescuento()) * 0.15f;
+                sb.append("  IVA 15%: $").append(String.format("%.2f", iva)).append(LF);
+            }
+        }
+        
+        sb.append("----------------------------------------").append(LF);
+        
+        // Totales
+        sb.append(ESC).append("E"); // Texto en negrita
+        float subtotal = parseFloatSafe(safeText(txt_subtotal1));
+        float iva = parseFloatSafe(safeText(txt_iva));
+        float descuento = parseFloatSafe(safeText(txt_descuento));
+        float total = parseFloatSafe(safeText(txt_total));
+        
+        sb.append(String.format("%-20s $%8.2f", "Subtotal:", subtotal)).append(LF);
+        sb.append(String.format("%-20s $%8.2f", "Descuento:", descuento)).append(LF);
+        sb.append(String.format("%-20s $%8.2f", "IVA:", iva)).append(LF);
+        sb.append("================================").append(LF);
+        sb.append(String.format("%-20s $%8.2f", "TOTAL:", total)).append(LF);
+        sb.append(ESC).append("F"); // Texto normal
+        
+        sb.append(LF).append(LF);
+        sb.append(centrarTexto("¡Gracias por su compra!")).append(LF);
+        sb.append(centrarTexto("Sistema de Ventas v1.0")).append(LF);
+        sb.append(LF).append(LF).append(LF);
+        
+        // Cortar papel
+        sb.append(GS).append("V").append((char)0); // Full cut
+        
+        return sb.toString();
+    }
+    
+    private String centrarTexto(String texto) {
+        if (texto == null || texto.isEmpty()) return "";
+        int espacios = (THERMAL_WIDTH - texto.length()) / 2;
+        if (espacios < 0) espacios = 0;
+        return " ".repeat(espacios) + texto;
+    }
+    
+    private String truncarTexto(String texto, int maxLength) {
+        if (texto == null) return "";
+        if (texto.length() <= maxLength) return texto;
+        return texto.substring(0, maxLength - 3) + "...";
+    }
+    
+    private float parseFloatSafe(String value) {
+        try {
+            return Float.parseFloat(value);
+        } catch (NumberFormatException e) {
+            return 0.0f;
+        }
+    }
+    
+    @FXML
+    private void buscarCliente() {
+        if (txt_buscar_cliente == null || txt_buscar_cliente.getText() == null || txt_buscar_cliente.getText().trim().isEmpty()) {
+            mostrarAlerta(AlertType.WARNING, "Búsqueda de cliente", "Ingrese cédula o nombre del cliente");
+            return;
+        }
+        
+        String criterio = txt_buscar_cliente.getText().trim();
+        ClienteManager clienteManager = ClienteManager.getInstance();
+        
+        // Primero intentar buscar por cédula exacta (si es cédula, debe ser única)
+        Cliente cliente = clienteManager.buscarClientePorCedula(criterio);
+        
+        if (cliente != null) {
+            // Si se encuentra por cédula, es único, llenar directamente
+            llenarDatosCliente(cliente);
+        } else {
+            // Buscar por nombre (puede haber múltiples resultados)
+            ObservableList<Cliente> resultados = clienteManager.buscarClientes(criterio);
+            
+            if (resultados.isEmpty()) {
+                mostrarAlerta(AlertType.WARNING, "Cliente no encontrado", 
+                    "No se encontró un cliente con el criterio: " + criterio);
+            } else if (resultados.size() == 1) {
+                // Solo un resultado, llenar directamente
+                llenarDatosCliente(resultados.get(0));
+            } else {
+                // Múltiples resultados, mostrar diálogo de selección
+                mostrarDialogoSeleccionCliente(resultados);
+            }
+        }
+    }
+    
+    private void llenarDatosCliente(Cliente cliente) {
+        // Llenar los campos del cliente
+        txt_ci.setText(cliente.getCedula());
+        txt_nombres.setText(cliente.getNombres());
+        txt_apellidos.setText(cliente.getApellidos());
+        txt_telefono.setText(cliente.getTelefono());
+        txt_correo.setText(cliente.getCorreo());
+        txt_direccion.setText(cliente.getDireccion());
+        
+        // Limpiar el campo de búsqueda
+        txt_buscar_cliente.clear();
+        
+        mostrarAlerta(AlertType.INFORMATION, "Cliente encontrado", 
+            "Cliente: " + cliente.getNombres() + " " + cliente.getApellidos());
+    }
+    
+    private void mostrarDialogoSeleccionCliente(ObservableList<Cliente> clientes) {
+        // Crear lista de opciones para el diálogo
+        ObservableList<String> opciones = FXCollections.observableArrayList();
+        for (Cliente cliente : clientes) {
+            opciones.add(cliente.getCedula() + " - " + cliente.getNombres() + " " + cliente.getApellidos());
+        }
+        
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(opciones.get(0), opciones);
+        dialog.setTitle("Múltiples clientes encontrados");
+        dialog.setHeaderText("Se encontraron " + clientes.size() + " clientes con el criterio de búsqueda");
+        dialog.setContentText("Seleccione el cliente correcto:");
+        
+        dialog.showAndWait().ifPresent(seleccion -> {
+            // Encontrar el cliente seleccionado
+            for (Cliente cliente : clientes) {
+                String opcion = cliente.getCedula() + " - " + cliente.getNombres() + " " + cliente.getApellidos();
+                if (opcion.equals(seleccion)) {
+                    llenarDatosCliente(cliente);
+                    break;
+                }
+            }
+        });
+    }
+    
+    @FXML
+    private void buscarProducto() {
+        if (txt_buscar_producto == null || txt_buscar_producto.getText() == null || txt_buscar_producto.getText().trim().isEmpty()) {
+            mostrarAlerta(AlertType.WARNING, "Búsqueda de producto", "Ingrese código o nombre del producto");
+            return;
+        }
+        
+        String criterio = txt_buscar_producto.getText().trim();
+        ProductManager productManager = ProductManager.getInstance();
+        
+        // Primero intentar buscar por código exacto (si es código, debe ser único)
+        Producto producto = productManager.buscarProductoPorCodigo(criterio);
+        
+        if (producto != null) {
+            // Si se encuentra por código, es único, seleccionar directamente
+            seleccionarProducto(producto);
+        } else {
+            // Buscar por nombre (puede haber múltiples resultados)
+            ObservableList<Producto> resultados = productManager.buscarProductos(criterio);
+            
+            if (resultados.isEmpty()) {
+                mostrarAlerta(AlertType.WARNING, "Producto no encontrado", 
+                    "No se encontró un producto con el criterio: " + criterio);
+            } else if (resultados.size() == 1) {
+                // Solo un resultado, seleccionar directamente
+                seleccionarProducto(resultados.get(0));
+            } else {
+                // Múltiples resultados, mostrar diálogo de selección
+                mostrarDialogoSeleccionProducto(resultados);
+            }
+        }
+    }
+    
+    private void seleccionarProducto(Producto producto) {
+        // Seleccionar el producto
+        productoSeleccionado = producto;
+        
+        // Mostrar información del producto encontrado
+        mostrarAlerta(AlertType.INFORMATION, "Producto encontrado", 
+            "Producto: " + producto.getProd_cod() + " - " + producto.getProd_nombre() + 
+            "\nPrecio: $" + producto.getProd_pvp());
+    }
+    
+    private void mostrarDialogoSeleccionProducto(ObservableList<Producto> productos) {
+        // Crear lista de opciones para el diálogo
+        ObservableList<String> opciones = FXCollections.observableArrayList();
+        for (Producto producto : productos) {
+            opciones.add(producto.getProd_cod() + " - " + producto.getProd_nombre() + " ($" + producto.getProd_pvp() + ")");
+        }
+        
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(opciones.get(0), opciones);
+        dialog.setTitle("Múltiples productos encontrados");
+        dialog.setHeaderText("Se encontraron " + productos.size() + " productos con el criterio de búsqueda");
+        dialog.setContentText("Seleccione el producto correcto:");
+        
+        dialog.showAndWait().ifPresent(seleccion -> {
+            // Encontrar el producto seleccionado
+            for (Producto producto : productos) {
+                String opcion = producto.getProd_cod() + " - " + producto.getProd_nombre() + " ($" + producto.getProd_pvp() + ")";
+                if (opcion.equals(seleccion)) {
+                    seleccionarProducto(producto);
+                    break;
+                }
+            }
+        });
+    }
 }
