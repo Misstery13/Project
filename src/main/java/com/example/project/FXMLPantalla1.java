@@ -245,4 +245,8 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
 
         txt_cedula.requestFocus();
     }
+
+    @javafx.fxml.FXML
+    public void btn(ActionEvent actionEvent) {
+    }
 }

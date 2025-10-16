@@ -5,17 +5,12 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.ComboBox;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ChoiceDialog;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.layout.VBox;
@@ -23,7 +18,6 @@ import javafx.scene.text.Font;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.image.ImageView;
 import javafx.scene.Node;
-import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.control.Label;
@@ -38,6 +32,10 @@ import javafx.scene.transform.Scale;
 import javafx.scene.layout.AnchorPane;
 import javafx.fxml.FXML;
 import javafx.collections.ObservableList;
+import javafx.stage.Popup;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ListCell;
+import javafx.geometry.Bounds;
 // duplicate import removed
 
 public class FacturaController {
@@ -90,8 +88,10 @@ public class FacturaController {
     private Button btn_agregar;
 
     private final javafx.collections.ObservableList<DetalleFactura> detalles = FXCollections.observableArrayList();
-    @FXML private TextField txt_buscar_cliente;
-    @FXML private Button btn_buscar_cliente;
+    // Autocompletado de clientes
+    private Popup clienteSuggestionsPopup;
+    private ListView<Cliente> clienteSuggestionsList;
+    
     @FXML private TextField txt_numFactura;
     @FXML private TextField txt_fecha;
     @FXML private TextField txt_ci;
@@ -122,15 +122,9 @@ public class FacturaController {
         if (tabla_detalle != null) {
             tabla_detalle.setItems(detalles);
         }
-        // Configurar búsqueda de clientes
-        if (btn_buscar_cliente != null) {
-            btn_buscar_cliente.setOnAction(e -> buscarCliente());
-        }
         
-        // Permitir búsqueda al presionar Enter en el campo de búsqueda de clientes
-        if (txt_buscar_cliente != null) {
-            txt_buscar_cliente.setOnAction(e -> buscarCliente());
-        }
+        // Configurar autocompletado de clientes en el campo de cédula
+        configurarAutocompletadoCliente();
 
         // Configurar columnas simples si existen
         if (col_codigo != null) { col_codigo.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getProd_cod()))); }
@@ -617,37 +611,109 @@ public class FacturaController {
         }
     }
     
-    @FXML
-    private void buscarCliente() {
-        if (txt_buscar_cliente == null || txt_buscar_cliente.getText() == null || txt_buscar_cliente.getText().trim().isEmpty()) {
-            mostrarAlerta(AlertType.WARNING, "Búsqueda de cliente", "Ingrese cédula o nombre del cliente");
-            return;
-        }
+    private void configurarAutocompletadoCliente() {
+        if (txt_ci == null) return;
         
-        String criterio = txt_buscar_cliente.getText().trim();
-        ClienteManager clienteManager = ClienteManager.getInstance();
+        // Inicializar el popup y la lista de sugerencias
+        clienteSuggestionsPopup = new Popup();
+        clienteSuggestionsList = new ListView<>();
+        clienteSuggestionsList.setPrefWidth(500);
+        clienteSuggestionsList.setPrefHeight(200);
+        clienteSuggestionsList.setStyle("-fx-background-color: white; -fx-border-color: #32a852; -fx-border-width: 2;");
         
-        // Primero intentar buscar por cédula exacta (si es cédula, debe ser única)
-        Cliente cliente = clienteManager.buscarClientePorCedula(criterio);
-        
-        if (cliente != null) {
-            // Si se encuentra por cédula, es único, llenar directamente
-            llenarDatosCliente(cliente);
-        } else {
-            // Buscar por nombre (puede haber múltiples resultados)
-            ObservableList<Cliente> resultados = clienteManager.buscarClientes(criterio);
-            
-            if (resultados.isEmpty()) {
-                mostrarAlerta(AlertType.WARNING, "Cliente no encontrado", 
-                    "No se encontró un cliente con el criterio: " + criterio);
-            } else if (resultados.size() == 1) {
-                // Solo un resultado, llenar directamente
-                llenarDatosCliente(resultados.get(0));
-            } else {
-                // Múltiples resultados, mostrar diálogo de selección
-                mostrarDialogoSeleccionCliente(resultados);
+        // Configurar cómo se muestra cada cliente en la lista
+        clienteSuggestionsList.setCellFactory(lv -> new ListCell<Cliente>() {
+            @Override
+            protected void updateItem(Cliente cliente, boolean empty) {
+                super.updateItem(cliente, empty);
+                if (empty || cliente == null) {
+                    setText(null);
+                } else {
+                    setText(cliente.getCedula() + " - " + cliente.getNombres() + " " + cliente.getApellidos());
+                }
             }
-        }
+        });
+        
+        // Al hacer clic en una sugerencia, llenar los datos
+        clienteSuggestionsList.setOnMouseClicked(event -> {
+            Cliente clienteSeleccionado = clienteSuggestionsList.getSelectionModel().getSelectedItem();
+            if (clienteSeleccionado != null) {
+                llenarDatosCliente(clienteSeleccionado);
+                clienteSuggestionsPopup.hide();
+            }
+        });
+        
+        // También permitir selección con Enter
+        clienteSuggestionsList.setOnKeyPressed(event -> {
+            if (event.getCode() == javafx.scene.input.KeyCode.ENTER) {
+                Cliente clienteSeleccionado = clienteSuggestionsList.getSelectionModel().getSelectedItem();
+                if (clienteSeleccionado != null) {
+                    llenarDatosCliente(clienteSeleccionado);
+                    clienteSuggestionsPopup.hide();
+                }
+            } else if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
+                clienteSuggestionsPopup.hide();
+            }
+        });
+        
+        clienteSuggestionsPopup.getContent().add(clienteSuggestionsList);
+        
+        // Listener para cuando el usuario escribe en el campo de cédula
+        txt_ci.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue == null || newValue.trim().isEmpty()) {
+                clienteSuggestionsPopup.hide();
+                return;
+            }
+            
+            String criterio = newValue.trim();
+            ClienteManager clienteManager = ClienteManager.getInstance();
+            
+            // Buscar clientes que coincidan con el criterio (por cédula o nombre)
+            ObservableList<Cliente> resultados = FXCollections.observableArrayList();
+            
+            // Buscar por cédula
+            Cliente porCedula = clienteManager.buscarClientePorCedula(criterio);
+            if (porCedula != null) {
+                resultados.add(porCedula);
+            }
+            
+            // También buscar por nombre (en caso de que el usuario escriba parte del nombre)
+            ObservableList<Cliente> porNombre = clienteManager.buscarClientes(criterio);
+            for (Cliente c : porNombre) {
+                if (!resultados.contains(c)) {
+                    resultados.add(c);
+                }
+            }
+            
+            if (!resultados.isEmpty()) {
+                clienteSuggestionsList.setItems(resultados);
+                
+                // Posicionar el popup debajo del campo de texto
+                if (!clienteSuggestionsPopup.isShowing()) {
+                    Bounds bounds = txt_ci.localToScreen(txt_ci.getBoundsInLocal());
+                    if (bounds != null) {
+                        clienteSuggestionsPopup.show(txt_ci, bounds.getMinX(), bounds.getMaxY());
+                    }
+                }
+            } else {
+                clienteSuggestionsPopup.hide();
+            }
+        });
+        
+        // Ocultar el popup cuando el campo de cédula pierde el foco
+        txt_ci.focusedProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue) {
+                // Pequeño delay para permitir hacer clic en la lista
+                javafx.application.Platform.runLater(() -> {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    clienteSuggestionsPopup.hide();
+                });
+            }
+        });
     }
     
     private void llenarDatosCliente(Cliente cliente) {
@@ -658,36 +724,6 @@ public class FacturaController {
         txt_telefono.setText(cliente.getTelefono());
         txt_correo.setText(cliente.getCorreo());
         txt_direccion.setText(cliente.getDireccion());
-        
-        // Limpiar el campo de búsqueda
-        txt_buscar_cliente.clear();
-        
-        mostrarAlerta(AlertType.INFORMATION, "Cliente encontrado", 
-            "Cliente: " + cliente.getNombres() + " " + cliente.getApellidos());
-    }
-    
-    private void mostrarDialogoSeleccionCliente(ObservableList<Cliente> clientes) {
-        // Crear lista de opciones para el diálogo
-        ObservableList<String> opciones = FXCollections.observableArrayList();
-        for (Cliente cliente : clientes) {
-            opciones.add(cliente.getCedula() + " - " + cliente.getNombres() + " " + cliente.getApellidos());
-        }
-        
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(opciones.get(0), opciones);
-        dialog.setTitle("Múltiples clientes encontrados");
-        dialog.setHeaderText("Se encontraron " + clientes.size() + " clientes con el criterio de búsqueda");
-        dialog.setContentText("Seleccione el cliente correcto:");
-        
-        dialog.showAndWait().ifPresent(seleccion -> {
-            // Encontrar el cliente seleccionado
-            for (Cliente cliente : clientes) {
-                String opcion = cliente.getCedula() + " - " + cliente.getNombres() + " " + cliente.getApellidos();
-                if (opcion.equals(seleccion)) {
-                    llenarDatosCliente(cliente);
-                    break;
-                }
-            }
-        });
     }
     
     @FXML

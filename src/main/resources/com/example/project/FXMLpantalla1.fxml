@@ -41,5 +41,6 @@
             </ImageView>
          </graphic>
       </Button>
+      <Button layoutX="104.0" layoutY="392.0" mnemonicParsing="false" onAction="#btn" text="Button" />
    </children>
 </AnchorPane>
