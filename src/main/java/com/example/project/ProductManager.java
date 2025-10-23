@@ -4,6 +4,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.sql.*;
 
+// removed invalid static import that conflicted with the singleton field
+
 public class ProductManager {
     private static ProductManager instance;
     private final ObservableList<Producto> productos;
@@ -108,7 +110,7 @@ public class ProductManager {
             pstmt.setString(1, producto.getProd_cod());
             pstmt.setString(2, producto.getProd_nombre());
             pstmt.setFloat(3, producto.getProd_pvp());
-            pstmt.setInt(4, producto.getProd_stock());
+            pstmt.setInt(4, (int) producto.getProd_stock());
             pstmt.setString(5, producto.getProd_estado() != null ? producto.getProd_estado() : "Activo");
             
             int affectedRows = pstmt.executeUpdate();
@@ -149,7 +151,7 @@ public class ProductManager {
             pstmt.setString(1, producto.getProd_cod());
             pstmt.setString(2, producto.getProd_nombre());
             pstmt.setFloat(3, producto.getProd_pvp());
-            pstmt.setInt(4, producto.getProd_stock());
+            pstmt.setInt(4, (int) producto.getProd_stock());
             pstmt.setString(5, producto.getProd_estado());
             pstmt.setInt(6, producto.getProd_id());
             
@@ -434,186 +436,3 @@ public class ProductManager {
         return resultados;
     }
 }
-
-        productos.add(p9);
-
-    }
-
-
-
-    public static synchronized ProductManager getInstance() {
-
-        if (instance == null) {
-
-            instance = new ProductManager();
-
-        }
-
-        return instance;
-
-    }
-
-
-
-    public ObservableList<Producto> getProductos() {
-
-        return productos;
-
-    }
-
-
-
-    public void agregarProducto(Producto producto) {
-
-        productos.add(producto);
-
-        System.out.println("Producto agregado. Total: " + productos.size());
-
-    }
-
-
-
-    public boolean existeCodigo(String codigo) {
-
-        if (codigo == null) return false;
-
-        String cod = codigo.trim().toLowerCase();
-
-        for (Producto p : productos) {
-
-            if (p.getProd_cod() != null && p.getProd_cod().trim().toLowerCase().equals(cod)) {
-
-                return true;
-
-            }
-
-        }
-
-        return false;
-
-    }
-
-
-
-    public boolean existeNombre(String nombre) {
-
-        if (nombre == null) return false;
-
-        String nom = nombre.trim().toLowerCase();
-
-        for (Producto p : productos) {
-
-            if (p.getProd_nombre() != null && p.getProd_nombre().trim().toLowerCase().equals(nom)) {
-
-                return true;
-
-            }
-
-        }
-
-        return false;
-
-    }
-
-
-
-    public Producto buscarProductoPorCodigo(String codigo) {
-
-        if (codigo == null || codigo.trim().isEmpty()) return null;
-
-        String codigoBusqueda = codigo.trim().toLowerCase();
-
-        for (Producto producto : productos) {
-
-            if (producto.getProd_cod() != null && producto.getProd_cod().trim().toLowerCase().equals(codigoBusqueda)) {
-
-                return producto;
-
-            }
-
-        }
-
-        return null;
-
-    }
-
-
-
-    public Producto buscarProductoPorNombre(String nombre) {
-
-        if (nombre == null || nombre.trim().isEmpty()) return null;
-
-        String nombreBusqueda = nombre.trim().toLowerCase();
-
-        for (Producto producto : productos) {
-
-            if (producto.getProd_nombre() != null && producto.getProd_nombre().toLowerCase().contains(nombreBusqueda)) {
-
-                return producto;
-
-            }
-
-        }
-
-        return null;
-
-    }
-
-
-
-    public ObservableList<Producto> buscarProductos(String criterio) {
-
-        if (criterio == null || criterio.trim().isEmpty()) return FXCollections.observableArrayList();
-
-        
-
-        ObservableList<Producto> resultados = FXCollections.observableArrayList();
-
-        String criterioBusqueda = criterio.trim().toLowerCase();
-
-        
-
-        for (Producto producto : productos) {
-
-            boolean coincide = false;
-
-            
-
-            // Buscar por código
-
-            if (producto.getProd_cod() != null && producto.getProd_cod().toLowerCase().contains(criterioBusqueda)) {
-
-                coincide = true;
-
-            }
-
-            
-
-            // Buscar por nombre
-
-            if (!coincide && producto.getProd_nombre() != null && producto.getProd_nombre().toLowerCase().contains(criterioBusqueda)) {
-
-                coincide = true;
-
-            }
-
-            
-
-            if (coincide) {
-
-                resultados.add(producto);
-
-            }
-
-        }
-
-        
-
-        return resultados;
-
-    }
-
-}
-
-
-

@@ -11,7 +11,7 @@ import java.sql.Statement;
 public class DatabaseConnection {
     // Configuración de conexión - MODIFICA ESTOS VALORES SEGÚN TU CONFIGURACIÓN
     private static final String URL = "jdbc:mysql://localhost:3306/BD2024_1";
-    private static final String USER = "DESKTOP-980N1BK\MSQL2";
+    private static final String USER = "DESKTOP-980N1BK\\MSQL2";
     private static final String PASSWORD = ""; // Cambia esto por tu contraseña 
     
     private static DatabaseConnection instance;

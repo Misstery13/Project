@@ -97,12 +97,12 @@ public class ClienteManager {
                 // Obtener el ID generado
                 try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
-                        cliente.setId(generatedKeys.getInt(1));
+                        cliente.setId_cliente(generatedKeys.getInt(1));
                     }
                 }
                 
         clientes.add(cliente);
-                System.out.println("Cliente agregado exitosamente. ID: " + cliente.getId());
+                System.out.println("Cliente agregado exitosamente. ID: " + cliente.getId_cliente());
                 return true;
             }
             
@@ -132,7 +132,7 @@ public class ClienteManager {
             pstmt.setString(4, cliente.getDireccion());
             pstmt.setString(5, cliente.getTelefono());
             pstmt.setString(6, cliente.getCorreo());
-            pstmt.setInt(7, cliente.getId());
+            pstmt.setInt(7, cliente.getId_cliente());
             
             int affectedRows = pstmt.executeUpdate();
             
@@ -298,135 +298,3 @@ public class ClienteManager {
     }
 }
 
-
-        System.out.println("Último cliente: " + cliente.getNombres() + " " + cliente.getApellidos());
-
-    }
-
-
-
-    public Cliente buscarClientePorCedula(String cedula) {
-
-        if (cedula == null || cedula.trim().isEmpty()) return null;
-
-        String cedulaBusqueda = cedula.trim().toLowerCase();
-
-        for (Cliente cliente : clientes) {
-
-            if (cliente.getCedula() != null && cliente.getCedula().trim().toLowerCase().equals(cedulaBusqueda)) {
-
-                return cliente;
-
-            }
-
-        }
-
-        return null;
-
-    }
-
-
-
-    public Cliente buscarClientePorNombre(String nombre) {
-
-        if (nombre == null || nombre.trim().isEmpty()) return null;
-
-        String nombreBusqueda = nombre.trim().toLowerCase();
-
-        for (Cliente cliente : clientes) {
-
-            String nombreCompleto = (cliente.getNombres() + " " + cliente.getApellidos()).toLowerCase();
-
-            if (nombreCompleto.contains(nombreBusqueda) || 
-
-                (cliente.getNombres() != null && cliente.getNombres().toLowerCase().contains(nombreBusqueda)) ||
-
-                (cliente.getApellidos() != null && cliente.getApellidos().toLowerCase().contains(nombreBusqueda))) {
-
-                return cliente;
-
-            }
-
-        }
-
-        return null;
-
-    }
-
-
-
-    public ObservableList<Cliente> buscarClientes(String criterio) {
-
-        if (criterio == null || criterio.trim().isEmpty()) return FXCollections.observableArrayList();
-
-        
-
-        ObservableList<Cliente> resultados = FXCollections.observableArrayList();
-
-        String criterioBusqueda = criterio.trim().toLowerCase();
-
-        
-
-        for (Cliente cliente : clientes) {
-
-            boolean coincide = false;
-
-            
-
-            // Buscar por cédula
-
-            if (cliente.getCedula() != null && cliente.getCedula().toLowerCase().contains(criterioBusqueda)) {
-
-                coincide = true;
-
-            }
-
-            
-
-            // Buscar por nombre completo
-
-            if (!coincide) {
-
-                String nombreCompleto = (cliente.getNombres() + " " + cliente.getApellidos()).toLowerCase();
-
-                if (nombreCompleto.contains(criterioBusqueda)) {
-
-                    coincide = true;
-
-                }
-
-            }
-
-            
-
-            // Buscar por nombres o apellidos individualmente
-
-            if (!coincide) {
-
-                if ((cliente.getNombres() != null && cliente.getNombres().toLowerCase().contains(criterioBusqueda)) ||
-
-                    (cliente.getApellidos() != null && cliente.getApellidos().toLowerCase().contains(criterioBusqueda))) {
-
-                    coincide = true;
-
-                }
-
-            }
-
-            
-
-            if (coincide) {
-
-                resultados.add(cliente);
-
-            }
-
-        }
-
-        
-
-        return resultados;
-
-    }
-
-}
