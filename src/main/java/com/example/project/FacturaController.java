@@ -394,6 +394,7 @@ public class FacturaController {
         scrollPane.setFitToHeight(true);
         
         // Crear layout
+        //prueba webhook para discord
         VBox content = new VBox(10);
         content.getChildren().addAll(
             new javafx.scene.control.Label("Formato optimizado para impresora térmica de 80mm:"),
