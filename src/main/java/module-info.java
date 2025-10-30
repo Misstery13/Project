@@ -12,6 +12,7 @@ module com.example.project {
     requires com.almasb.fxgl.all;
     requires javafx.base;
     requires java.sql;
+    requires com.microsoft.sqlserver.jdbc;
     requires com.fasterxml.jackson.databind;
 
     opens com.example.project to javafx.fxml;

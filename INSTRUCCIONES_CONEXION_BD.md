@@ -1,211 +1,208 @@
-# 📋 Guía de Conexión a Base de Datos MySQL
+# 📋 Guía de Conexión a Base de Datos SQL Server
 
-## ✅ Pasos para Conectar tu Base de Datos
+## 🔐 Autenticación de Windows (Sin Contraseña)
 
-### 1️⃣ **Configurar los Parámetros de Conexión**
+Tu aplicación está configurada para usar **SQL Server con autenticación integrada de Windows**. Esto significa que no necesitas usuario ni contraseña: SQL Server usa tus credenciales de Windows automáticamente.
+
+### ✅ Configuración Actual
 
 Abre el archivo: `src/main/java/com/example/project/DatabaseConnection.java`
 
-Modifica las líneas 11-13 con los datos de TU base de datos:
-
+**Configuración actual (línea 26):**
 ```java
-private static final String URL = "jdbc:mysql://localhost:3306/TU_BASE_DE_DATOS";
-private static final String USER = "TU_USUARIO";
-private static final String PASSWORD = "TU_CONTRASEÑA";
+private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=bdFactura;integratedSecurity=true";
 ```
 
-**Ejemplos:**
+**NO necesitas USER ni PASSWORD** porque `integratedSecurity=true` usa tu usuario de Windows.
 
-#### Si tu base de datos está en localhost (tu computadora):
-```java
-private static final String URL = "jdbc:mysql://localhost:3306/facturacion_db";
-private static final String USER = "root";
-private static final String PASSWORD = "micontraseña123";
+### 📝 Cómo Verificar tu Configuración Actual
+
+**Opción 1 - Desde el código:**
+Llama al método `DatabaseConnection.mostrarConfiguracion()` en cualquier parte de tu código para ver la configuración actual.
+
+**Opción 2 - Probar la conexión:**
+Ejecuta el método `main` de `DatabaseConnection` para probar la conexión:
+```bash
+# Desde la terminal en el directorio del proyecto
+mvn exec:java -Dexec.mainClass="com.example.project.DatabaseConnection"
 ```
 
-#### Si tu base de datos está en un servidor remoto:
-```java
-private static final String URL = "jdbc:mysql://192.168.1.100:3306/facturacion_db";
-private static final String USER = "usuario_bd";
-private static final String PASSWORD = "contraseña_segura";
-```
+**Opción 3 - Verificar manualmente en SQL Server:**
+1. Abre **SQL Server Management Studio (SSMS)**
+2. En "Tipo de servidor", selecciona "Motor de base de datos"
+3. En "Nombre del servidor", escribe `localhost` o `localhost\NOMBRE_INSTANCIA`
+4. En "Autenticación", selecciona "Autenticación de Windows"
+5. Haz clic en "Conectar"
+
+### 🎯 ¿Cuál es mi URL, Usuario y Contraseña?
+
+1. **URL:** `jdbc:sqlserver://localhost:1433;databaseName=bdFactura;integratedSecurity=true`
+   - `localhost` = servidor local (tu computadora)
+   - Si tu instancia tiene nombre: usa `localhost\NOMBRE_INSTANCIA` (ejemplo: `localhost哈哈\SQLEXPRESS`)
+   - `1433` = puerto por defecto de SQL Server
+   - `bdFactura` = nombre de tu base de datos
+   - `integratedSecurity=true` = usa autenticación de Windows
+   
+   **Para encontrar el nombre de tu instancia SQL Server:**
+   - Abre "Servicios" de Windows (Win+R → `services.msc`)
+   - Busca "SQL Server (NOMBRE_INSTANCIA)"
+   - Ejemplo: "SQL Server (SQLEXPRESS)" → el nombre es `SQLEXPRESS`
+   
+   **Para verificar si tu base de datos existe:**
+   ```sql
+   SELECT name FROM sys.databases;
+   ```
+
+2. **Usuario:** NO necesitas especificarlo
+   - SQL Server usa automáticamente tu usuario de Windows actual
+   - Ejemplo: si tu usuario de Windows es "DESKTOP-980N1BK\\Usuario", SQL Server lo usará
+
+3. **Contraseña:** NO necesitas especificarla
+   - Con `integratedSecurity=true`, SQL Server usa tu sesión de Windows
 
 ---
 
-### 2️⃣ **Verificar que MySQL esté corriendo**
+## ✅ Pasos para Conectar tu Base de Datos
+
+### 1️⃣ **Verificar que SQL Server esté corriendo**
 
 **En Windows:**
-- Abre "Servicios" (presiona Win+R, escribe `services.msc` y Enter)
-- Busca "MySQL" en la lista
+- Presiona `Win+R`, escribe `services.msc` y presiona Enter
+- Busca "SQL Server" en la lista
 - Asegúrate de que esté "En ejecución"
+- Si ves múltiples servicios, busca el que corresponde a tu instancia
+  - Ejemplo: "SQL Server (SQLEXPRESS)" o "SQL Server (MSSQLSERVER)"
 
-**Desde línea de comandos:**
-```bash
-mysql -u root -p
+### 2️⃣ **Verificar la configuración de la URL**
+
+Abre `src/main/java/com/example/project/DatabaseConnection.java` y verifica la línea 26:
+
+**Si tu instancia es la predeterminada (sin nombre):**
+```java
+private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=bdFactura;integratedSecurity=true";
 ```
-Te pedirá la contraseña. Si se conecta, MySQL está corriendo.
 
----
+**Si tu instancia tiene nombre (ejemplo: SQLEXPRESS):**
+```java
+private static final String URL = "jdbc:sqlserver://localhost\\SQLEXPRESS:1433;databaseName=bdFactura;integratedSecurity=true";
+```
 
-### 3️⃣ **Crear las Tablas Necesarias**
+**Nota:** Usa doble barra invertida `\\` para el nombre de instancia en la URL JDBC.
 
-Tu base de datos necesita estas tablas. Ejecuta este SQL:
+### 3️⃣ **Crear la Base de Datos (si no existe)**
 
+Abre SQL Server Management Studio (SSMS) y ejecuta:
 ```sql
--- Tabla de clientes
-CREATE TABLE IF NOT EXISTS clientes (
-    cli_id INT PRIMARY KEY AUTO_INCREMENT,
-    cli_cedula VARCHAR(20) UNIQUE NOT NULL,
-    cli_apellidos VARCHAR(100) NOT NULL,
-    cli_nombres VARCHAR(100) NOT NULL,
-    cli_direccion VARCHAR(200),
-    cli_telefono VARCHAR(20),
-    cli_correo VARCHAR(100),
-    cli_estado VARCHAR(20) DEFAULT 'Activo',
-    cli_fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tabla de productos
-CREATE TABLE IF NOT EXISTS productos (
-    prod_id INT PRIMARY KEY AUTO_INCREMENT,
-    prod_cod VARCHAR(50) UNIQUE NOT NULL,
-    prod_nombre VARCHAR(200) NOT NULL,
-    prod_pvp DECIMAL(10,2) NOT NULL,
-    prod_stock INT DEFAULT 0,
-    prod_estado VARCHAR(20) DEFAULT 'Activo',
-    prod_fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tabla de facturas
-CREATE TABLE IF NOT EXISTS facturas (
-    fac_id INT PRIMARY KEY AUTO_INCREMENT,
-    fac_numero VARCHAR(50) UNIQUE NOT NULL,
-    fac_fecha DATE NOT NULL,
-    fac_cliente_id INT NOT NULL,
-    fac_subtotal DECIMAL(10,2) DEFAULT 0,
-    fac_iva DECIMAL(10,2) DEFAULT 0,
-    fac_descuento DECIMAL(10,2) DEFAULT 0,
-    fac_total DECIMAL(10,2) NOT NULL,
-    fac_estado VARCHAR(20) DEFAULT 'Activa',
-    fac_fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (fac_cliente_id) REFERENCES clientes(cli_id)
-);
-
--- Tabla de detalles de factura
-CREATE TABLE IF NOT EXISTS factura_detalles (
-    det_id INT PRIMARY KEY AUTO_INCREMENT,
-    det_factura_id INT NOT NULL,
-    det_producto_id INT NOT NULL,
-    det_cantidad INT NOT NULL,
-    det_precio_unitario DECIMAL(10,2) NOT NULL,
-    det_aplica_iva BOOLEAN DEFAULT TRUE,
-    det_descuento DECIMAL(5,2) DEFAULT 0,
-    det_subtotal DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (det_factura_id) REFERENCES facturas(fac_id),
-    FOREIGN KEY (det_producto_id) REFERENCES productos(prod_id)
-);
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'bdFactura')
+BEGIN
+    CREATE DATABASE bdFactura;
+END
 ```
 
-**¿Cómo ejecutar este SQL?**
-
-**Opción A - MySQL Workbench:**
-1. Abre MySQL Workbench
-2. Conecta a tu base de datos
-3. Crea una nueva query (Ctrl+T)
-4. Pega el SQL de arriba
-5. Ejecuta (Ctrl+Enter o botón ⚡)
-
-**Opción B - Línea de comandos:**
+O desde la línea de comandos:
 ```bash
-mysql -u root -p nombre_base_datos < script.sql
+sqlcmd -S localhost -E -Q "CREATE DATABASE bdFactura"
 ```
 
----
+### 4️⃣ **Crear las Tablas Necesarias**
 
-### 4️⃣ **Probar la Conexión**
+Tu aplicación puede crear las tablas automáticamente cuando se ejecute, o puedes crearlas manualmente:
 
-La aplicación automáticamente intentará conectarse cuando inicies. Verás mensajes en la consola:
-
-✅ **Conexión exitosa:**
-```
-Driver MySQL cargado correctamente
-Conexión a la base de datos establecida exitosamente
-Clientes cargados desde BD: X
-Productos cargados desde BD: X
+**Opción A - Automático:**
+Ejecuta tu aplicación y llama al método:
+```java
+DatabaseConnection.getInstance().crearTablasNecesarias();
 ```
 
-❌ **Error de conexión:**
-```
-Error al conectar con la base de datos: ...
-Cargando datos de prueba en memoria...
-```
+**Opción B - Manualmente desde SSMS:**
+Las tablas se crearán con la sintaxis SQL Server (IDENTITY en lugar de AUTO_INCREMENT, etc.)
 
----
+### 5️⃣ **Verificar Permisos**
 
-### 5️⃣ **Agregar Datos de Prueba (Opcional)**
+Asegúrate de que tu usuario de Windows tenga permisos en SQL Server:
 
-Si quieres tener datos iniciales para probar:
-
-```sql
--- Insertar clientes de prueba
-INSERT INTO clientes (cli_cedula, cli_apellidos, cli_nombres, cli_direccion, cli_telefono, cli_correo) VALUES
-('2450128257', 'Melena', 'Diana', 'Santa Elena', '0963610580', 'diana.melena25@gmail.com'),
-('1234567890', 'García', 'Carlos', 'Guayaquil', '0987654321', 'carlos.garcia@email.com'),
-('0987654321', 'López', 'María', 'Quito', '0912345678', 'maria.lopez@email.com');
-
--- Insertar productos de prueba
-INSERT INTO productos (prod_cod, prod_nombre, prod_pvp, prod_stock) VALUES
-('LAP001', 'Laptop HP', 899.99, 50),
-('MON001', 'Monitor Samsung', 299.99, 40),
-('TEC001', 'Teclado Logitech', 49.99, 100),
-('MOU001', 'Mouse Inalámbrico', 29.99, 80);
-```
+**Desde SSMS:**
+1. Conecta como administrador
+2. Expande "Seguridad" → "Inicios de sesión"
+3. Si tu usuario de Windows no aparece:
+   - Click derecho en "Inicios de sesión" → "Nuevo inicio de sesión"
+   - Selecciona "Buscar..." y busca tu usuario de Windows
+   - En "Roles de servidor", marca "sysadmin" (o al menos "dbcreator" y "public")
+   - En "Mapeo de usuario", marca la base de datos `bdFactura` y otorga permisos
 
 ---
 
 ## 🔧 Problemas Comunes y Soluciones
 
-### ❌ Error: "Access denied for user"
-**Solución:** Usuario o contraseña incorrectos. Verifica en `DatabaseConnection.java`
+### ❌ Error: "This driver is not configured for picks up security"
 
-### ❌ Error: "Unknown database"
-**Solución:** La base de datos no existe. Créala primero:
-```sql
-CREATE DATABASE facturacion_db CHARACTER SET utf8mb4;
-```
+**Solución:** Necesitas el archivo `sqljdbc_auth.dll`:
+1. Descarga el driver JDBC de SQL Server desde Microsoft
+2. Extrae `sqljdbc_auth.dll` (está en la carpeta `sqljdbc_X.X\enu\auth\x64` o `x86`)
+3. Copia el archivo a una carpeta en tu PATH (ejemplo: `C:\Windows\System32`)
+4. O especifica la ruta: `-Djava.library.path=C:\ruta\a\sqljdbc_auth.dll`
 
-### ❌ Error: "Communications link failure"
+### ❌ Error: "Cannot open database 'bdFactura' requested by the login"
+
 **Solución:** 
-- MySQL no está corriendo
-- El puerto 3306 está bloqueado por firewall
-- La IP/host es incorrecta
+1. La base de datos no existe → Créala (paso 3)
+2. Tu usuario no tiene permisos → Otorga permisos (paso 5)
 
-### ❌ Error: "Table doesn't exist"
-**Solución:** Ejecuta el script SQL del paso 3 para crear las tablas
+### ❌ Error: "Login failed for user"
+
+**Solución:**
+1. Asegúrate de que SQL Server esté configurado para aceptar autenticación de Windows:
+   - Abre SSMS
+   - Click derecho en el servidor → "Propiedades" → "Seguridad"
+   - Marca "Autenticación de Windows y autenticación de SQL Server"
+
+### ❌ Error: "Communications link failure" o "Connection refused"
+
+**Solución:**
+1. SQL Server no está corriendo → Verifica los servicios (paso 1)
+2. El puerto está bloqueado → Verifica el firewall
+3. La instancia tiene un nombre diferente → Actualiza la URL con el nombre correcto
+
+### ❌ Error: "The server was not found or was not accessible"
+
+**Solución:**
+1. Verifica el nombre de la instancia en la URL
+2. Si usas instancia nombrada, usa `localhost\\INSTANCIA` (con doble barra)
+3. Prueba conectarte desde SSMS primero para verificar el nombre correcto
 
 ---
 
 ## 🎯 Resumen Rápido
 
-1. ✏️ Modifica `DatabaseConnection.java` líneas 11-13
-2. ✅ Verifica que MySQL esté corriendo
-3. 📝 Ejecuta el SQL para crear las tablas
-4. ▶️ Ejecuta tu aplicación
-5. 👀 Revisa la consola para ver el estado de conexión
+1. ✅ Verifica que SQL Server esté corriendo (Servicios de Windows)
+2. ✏️ Ajusta la URL en `DatabaseConnection.java` si tu instancia tiene nombre
+3. 📝 Crea la base de datos `bdFactura` si no existe
+4. 🔐 Asegúrate de tener permisos en SQL Server
+5. ▶️ Ejecuta tu aplicación
+6. 👀 Revisa la consola para ver el estado de conexión
 
 ---
 
-## 💡 Ventajas del Sistema
+## 💡 Notas Importantes
 
-- ✅ **Fallback automático**: Si no puede conectar a BD, usa datos en memoria
-- ✅ **Sincronización automática**: Los datos se guardan inmediatamente
-- ✅ **Búsqueda optimizada**: Consultas SQL rápidas
-- ✅ **Persistencia**: Los datos no se pierden al cerrar la app
+- ✅ **Autenticación integrada de Windows:** La forma más segura de conectar con SQL Server
+- ✅ **No necesitas contraseña:** SQL Server usa tu sesión de Windows
+- ✅ **Usuario automático:** SQL Server identifica tu usuario de Windows automáticamente
+- ⚠️ **sqljdbc_auth.dll:** Puede ser necesario para autenticación integrada en algunos sistemas
 
 ---
 
 ## 📞 ¿Necesitas Ayuda?
 
-Si tienes errores específicos, copia el mensaje de error completo de la consola para diagnosticar el problema.
+Si tienes errores específicos:
+1. Copia el mensaje de error completo de la consola
+2. Verifica que SQL Server Management Studio se conecte correctamente
+3. Revisa los logs de SQL Server en "Visor de eventos" de Windows
 
+---
 
+## 🔗 Recursos Adicionales
+
+- [Documentación oficial del driver JDBC de SQL Server](https://docs.microsoft.com/en-us/sql/connect/jdbc/)
+- [Descargar SQL Server Management Studio (SSMS)](https://docs.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms)
+- [Descargar el driver JDBC de Microsoft](https://docs.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server)
