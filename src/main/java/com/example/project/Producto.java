@@ -5,10 +5,20 @@ public class Producto {
     private String prod_cod;
     private String prod_nombre;
     private float prod_precioCompra;
-    private float prod_pvp;
-    private float prod_stock;
-    private float prod_aplicaIva;
+    private float prod_pvpxmenor;  // Precio venta por menor
+    private float prod_pvpxmayor;  // Precio venta por mayor
+    private int prod_stock;
+    private boolean prod_aplicalva;  // Aplica IVA (bit en BD)
     private String prod_estado;
+    
+    // Método de compatibilidad - retorna prod_pvpxmenor como PVP
+    public float getProd_pvp() {
+        return prod_pvpxmenor;
+    }
+    
+    public void setProd_pvp(float pvp) {
+        this.prod_pvpxmenor = pvp;
+    }
 
     public int getProd_id() {
         return prod_id;
@@ -42,28 +52,45 @@ public class Producto {
         this.prod_precioCompra = prod_precioCompra;
     }
 
-    public float getProd_pvp() {
-        return prod_pvp;
+    public float getProd_pvpxmenor() {
+        return prod_pvpxmenor;
     }
 
-    public void setProd_pvp(float prod_pvp) {
-        this.prod_pvp = prod_pvp;
+    public void setProd_pvpxmenor(float prod_pvpxmenor) {
+        this.prod_pvpxmenor = prod_pvpxmenor;
     }
 
-    public float getProd_stock() {
+    public float getProd_pvpxmayor() {
+        return prod_pvpxmayor;
+    }
+
+    public void setProd_pvpxmayor(float prod_pvpxmayor) {
+        this.prod_pvpxmayor = prod_pvpxmayor;
+    }
+
+    public int getProd_stock() {
         return prod_stock;
     }
 
-    public void setProd_stock(float prod_stock) {
+    public void setProd_stock(int prod_stock) {
         this.prod_stock = prod_stock;
     }
 
+    public boolean getProd_aplicalva() {
+        return prod_aplicalva;
+    }
+
+    public void setProd_aplicalva(boolean prod_aplicalva) {
+        this.prod_aplicalva = prod_aplicalva;
+    }
+    
+    // Método de compatibilidad para código existente
     public float getProd_aplicaIva() {
-        return prod_aplicaIva;
+        return prod_aplicalva ? 1.0f : 0.0f;
     }
 
     public void setProd_aplicaIva(float prod_aplicaIva) {
-        this.prod_aplicaIva = prod_aplicaIva;
+        this.prod_aplicalva = prod_aplicaIva > 0;
     }
 
     public String getProd_estado() {

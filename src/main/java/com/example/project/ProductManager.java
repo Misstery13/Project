@@ -27,7 +27,16 @@ public class ProductManager {
      */
     private void cargarProductosDesdeDB() {
         productos.clear();
-        String sql = "SELECT * FROM productos WHERE prod_estado = 'Activo' ORDER BY prod_nombre";
+        // Verificar si la columna prod_aplicaIva existe antes de incluirla en el SELECT
+        boolean columnaAplicaIvaExiste = verificarColumnaExiste("producto", "prod_aplicaIva");
+        
+        String sql;
+        if (columnaAplicaIvaExiste) {
+            sql = "SELECT * FROM producto WHERE (prod_estado = 'A' OR prod_estado = 'Activo' OR prod_estado IS NULL) ORDER BY prod_nombre";
+        } else {
+            sql = "SELECT prod_id, prod_cod, prod_nombre, prod_precioCompra, prod_pvpxmenor, prod_pvpxmayor, prod_stock, prod_estado " +
+                  "FROM producto WHERE (prod_estado = 'A' OR prod_estado = 'Activo' OR prod_estado IS NULL) ORDER BY prod_nombre";
+        }
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              Statement stmt = conn.createStatement();
@@ -38,9 +47,58 @@ public class ProductManager {
                 producto.setProd_id(rs.getInt("prod_id"));
                 producto.setProd_cod(rs.getString("prod_cod"));
                 producto.setProd_nombre(rs.getString("prod_nombre"));
-                producto.setProd_pvp(rs.getFloat("prod_pvp"));
-                producto.setProd_stock(rs.getInt("prod_stock"));
-                producto.setProd_estado(rs.getString("prod_estado"));
+                
+                // Leer precio de compra
+                Object precioCompraObj = rs.getObject("prod_precioCompra");
+                producto.setProd_precioCompra(precioCompraObj != null ? rs.getFloat("prod_precioCompra") : 0.0f);
+                
+                // Leer precio venta por menor
+                Object pvpXMenorObj = rs.getObject("prod_pvpxmenor");
+                producto.setProd_pvpxmenor(pvpXMenorObj != null ? rs.getFloat("prod_pvpxmenor") : 0.0f);
+                
+                // Leer precio venta por mayor
+                Object pvpXMayorObj = rs.getObject("prod_pvpxmayor");
+                producto.setProd_pvpxmayor(pvpXMayorObj != null ? rs.getFloat("prod_pvpxmayor") : 0.0f);
+                
+                // Leer stock (entero)
+                Object stockObj = rs.getObject("prod_stock");
+                producto.setProd_stock(stockObj != null ? rs.getInt("prod_stock") : 0);
+                
+                // Leer aplica IVA (bit) - solo si la columna existe
+                if (columnaAplicaIvaExiste) {
+                    try {
+                        Object aplicaIvaObj = rs.getObject("prod_aplicaIva");
+                        if (aplicaIvaObj != null) {
+                            if (aplicaIvaObj instanceof Boolean) {
+                                producto.setProd_aplicalva((Boolean) aplicaIvaObj);
+                            } else {
+                                producto.setProd_aplicalva(rs.getInt("prod_aplicaIva") > 0);
+                            }
+                        } else {
+                            producto.setProd_aplicalva(false);
+                        }
+                    } catch (SQLException e) {
+                        // Si hay error, usar false por defecto
+                        producto.setProd_aplicalva(false);
+                    }
+                } else {
+                    // Si la columna no existe, usar false por defecto
+                    producto.setProd_aplicalva(false);
+                }
+                
+                // Leer estado y convertir de BD ('A'/'I') a formato legible ("Activo"/"Inactivo")
+                String estadoBD = rs.getString("prod_estado");
+                String estadoLegible = "A";  // Por defecto: Activo
+                if (estadoBD != null) {
+                    if ("A".equals(estadoBD.trim())) {
+                        estadoLegible = "Activo";
+                    } else if ("I".equals(estadoBD.trim())) {
+                        estadoLegible = "Inactivo";
+                    } else {
+                        estadoLegible = estadoBD;  // Mantener el valor si no es 'A' ni 'I'
+                    }
+                }
+                producto.setProd_estado(estadoLegible);
                 productos.add(producto);
             }
             System.out.println("Productos cargados desde BD: " + productos.size());
@@ -63,7 +121,7 @@ public class ProductManager {
         p1.setProd_cod("LAP001");
         p1.setProd_nombre("Laptop HP");
         p1.setProd_pvp(899.99f);
-        p1.setProd_stock(50);
+        p1.setProd_stock(50);  // int
         p1.setProd_estado("Activo");
         productos.add(p1);
         
@@ -72,7 +130,7 @@ public class ProductManager {
         p2.setProd_cod("LAP002");
         p2.setProd_nombre("Laptop Dell");
         p2.setProd_pvp(799.99f);
-        p2.setProd_stock(30);
+        p2.setProd_stock(30);  // int
         p2.setProd_estado("Activo");
         productos.add(p2);
         
@@ -81,7 +139,7 @@ public class ProductManager {
         p3.setProd_cod("MON001");
         p3.setProd_nombre("Monitor Samsung");
         p3.setProd_pvp(299.99f);
-        p3.setProd_stock(40);
+        p3.setProd_stock(40);  // int
         p3.setProd_estado("Activo");
         productos.add(p3);
     }
@@ -101,17 +159,43 @@ public class ProductManager {
      * Agrega un producto a la base de datos
      */
     public boolean agregarProducto(Producto producto) {
-        String sql = "INSERT INTO productos (prod_cod, prod_nombre, prod_pvp, prod_stock, prod_estado) " +
-                     "VALUES (?, ?, ?, ?, ?)";
+        // Verificar si la columna prod_aplicaIva existe antes de incluirla
+        boolean columnaAplicaIvaExiste = verificarColumnaExiste("producto", "prod_aplicaIva");
+        
+        String sql;
+        if (columnaAplicaIvaExiste) {
+            sql = "INSERT INTO producto (prod_cod, prod_nombre, prod_precioCompra, prod_pvpxmenor, prod_pvpxmayor, prod_stock, prod_aplicaIva, prod_estado) " +
+                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        } else {
+            sql = "INSERT INTO producto (prod_cod, prod_nombre, prod_precioCompra, prod_pvpxmenor, prod_pvpxmayor, prod_stock, prod_estado) " +
+                  "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        }
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             
             pstmt.setString(1, producto.getProd_cod());
             pstmt.setString(2, producto.getProd_nombre());
-            pstmt.setFloat(3, producto.getProd_pvp());
-            pstmt.setInt(4, (int) producto.getProd_stock());
-            pstmt.setString(5, producto.getProd_estado() != null ? producto.getProd_estado() : "Activo");
+            pstmt.setFloat(3, producto.getProd_precioCompra());
+            pstmt.setFloat(4, producto.getProd_pvpxmenor());
+            pstmt.setFloat(5, producto.getProd_pvpxmayor());
+            pstmt.setInt(6, producto.getProd_stock());
+            
+            // Convertir 'Activo' a 'A' o 'Inactivo' a 'I'
+            String estado = producto.getProd_estado() != null ? producto.getProd_estado() : "A";
+            if ("Activo".equals(estado)) estado = "A";
+            if ("Inactivo".equals(estado)) estado = "I";
+            
+            if (columnaAplicaIvaExiste) {
+                // Guardar como 1 o 0 (BIT en SQL Server) en lugar de boolean
+                int aplicaIvaValue = producto.getProd_aplicalva() ? 1 : 0;
+                System.out.println("  [DEBUG] Guardando aplicaIva: " + aplicaIvaValue + " (checkbox seleccionado: " + producto.getProd_aplicalva() + ")");
+                pstmt.setInt(7, aplicaIvaValue);
+                pstmt.setString(8, estado);
+            } else {
+                System.out.println("  [DEBUG] Columna prod_aplicaIva no existe, omitiendo...");
+                pstmt.setString(7, estado);
+            }
             
             int affectedRows = pstmt.executeUpdate();
             
@@ -142,18 +226,43 @@ public class ProductManager {
      * Actualiza un producto en la base de datos
      */
     public boolean actualizarProducto(Producto producto) {
-        String sql = "UPDATE productos SET prod_cod = ?, prod_nombre = ?, prod_pvp = ?, " +
-                     "prod_stock = ?, prod_estado = ? WHERE prod_id = ?";
+        // Verificar si la columna prod_aplicaIva existe antes de incluirla
+        boolean columnaAplicaIvaExiste = verificarColumnaExiste("producto", "prod_aplicaIva");
+        
+        String sql;
+        if (columnaAplicaIvaExiste) {
+            sql = "UPDATE producto SET prod_cod = ?, prod_nombre = ?, prod_precioCompra = ?, " +
+                  "prod_pvpxmenor = ?, prod_pvpxmayor = ?, prod_stock = ?, prod_aplicaIva = ?, prod_estado = ? WHERE prod_id = ?";
+        } else {
+            sql = "UPDATE producto SET prod_cod = ?, prod_nombre = ?, prod_precioCompra = ?, " +
+                  "prod_pvpxmenor = ?, prod_pvpxmayor = ?, prod_stock = ?, prod_estado = ? WHERE prod_id = ?";
+        }
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, producto.getProd_cod());
             pstmt.setString(2, producto.getProd_nombre());
-            pstmt.setFloat(3, producto.getProd_pvp());
-            pstmt.setInt(4, (int) producto.getProd_stock());
-            pstmt.setString(5, producto.getProd_estado());
-            pstmt.setInt(6, producto.getProd_id());
+            pstmt.setFloat(3, producto.getProd_precioCompra());
+            pstmt.setFloat(4, producto.getProd_pvpxmenor());
+            pstmt.setFloat(5, producto.getProd_pvpxmayor());
+            pstmt.setInt(6, producto.getProd_stock());
+            
+            // Convertir 'Activo' a 'A' o 'Inactivo' a 'I'
+            String estado = producto.getProd_estado() != null ? producto.getProd_estado() : "A";
+            if ("Activo".equals(estado)) estado = "A";
+            if ("Inactivo".equals(estado)) estado = "I";
+            
+            if (columnaAplicaIvaExiste) {
+                // Guardar como 1 o 0 (BIT en SQL Server) en lugar de boolean
+                int aplicaIvaValue = producto.getProd_aplicalva() ? 1 : 0;
+                pstmt.setInt(7, aplicaIvaValue);
+                pstmt.setString(8, estado);
+                pstmt.setInt(9, producto.getProd_id());
+            } else {
+                pstmt.setString(7, estado);
+                pstmt.setInt(8, producto.getProd_id());
+            }
             
             int affectedRows = pstmt.executeUpdate();
             
@@ -174,7 +283,7 @@ public class ProductManager {
      * Actualiza el stock de un producto
      */
     public boolean actualizarStock(int productoId, int nuevoStock) {
-        String sql = "UPDATE productos SET prod_stock = ? WHERE prod_id = ?";
+        String sql = "UPDATE producto SET prod_stock = ? WHERE prod_id = ?";
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -200,7 +309,7 @@ public class ProductManager {
      * Elimina (inactiva) un producto de la base de datos
      */
     public boolean eliminarProducto(int productoId) {
-        String sql = "UPDATE productos SET prod_estado = 'Inactivo' WHERE prod_id = ?";
+        String sql = "UPDATE producto SET prod_estado = 'I' WHERE prod_id = ?";
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -224,7 +333,7 @@ public class ProductManager {
     public boolean existeCodigo(String codigo) {
         if (codigo == null) return false;
         
-        String sql = "SELECT COUNT(*) FROM productos WHERE prod_cod = ? AND prod_estado = 'Activo'";
+        String sql = "SELECT COUNT(*) FROM producto WHERE prod_cod = ? AND (prod_estado = 'A' OR prod_estado = 'Activo' OR prod_estado IS NULL)";
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -248,7 +357,7 @@ public class ProductManager {
     public boolean existeNombre(String nombre) {
         if (nombre == null) return false;
         
-        String sql = "SELECT COUNT(*) FROM productos WHERE prod_nombre = ? AND prod_estado = 'Activo'";
+        String sql = "SELECT COUNT(*) FROM producto WHERE prod_nombre = ? AND (prod_estado = 'A' OR prod_estado = 'Activo' OR prod_estado IS NULL)";
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -271,7 +380,7 @@ public class ProductManager {
     public Producto buscarProductoPorCodigo(String codigo) {
         if (codigo == null || codigo.trim().isEmpty()) return null;
         
-        String sql = "SELECT * FROM productos WHERE prod_cod = ? AND prod_estado = 'Activo'";
+        String sql = "SELECT * FROM producto WHERE prod_cod = ? AND (prod_estado = 'A' OR prod_estado = 'Activo' OR prod_estado IS NULL)";
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -284,9 +393,43 @@ public class ProductManager {
                 producto.setProd_id(rs.getInt("prod_id"));
                 producto.setProd_cod(rs.getString("prod_cod"));
                 producto.setProd_nombre(rs.getString("prod_nombre"));
-                producto.setProd_pvp(rs.getFloat("prod_pvp"));
-                producto.setProd_stock(rs.getInt("prod_stock"));
-                producto.setProd_estado(rs.getString("prod_estado"));
+                
+                Object precioCompraObj = rs.getObject("prod_precioCompra");
+                producto.setProd_precioCompra(precioCompraObj != null ? rs.getFloat("prod_precioCompra") : 0.0f);
+                
+                Object pvpXMenorObj = rs.getObject("prod_pvpxmenor");
+                producto.setProd_pvpxmenor(pvpXMenorObj != null ? rs.getFloat("prod_pvpxmenor") : 0.0f);
+                
+                Object pvpXMayorObj = rs.getObject("prod_pvpxmayor");
+                producto.setProd_pvpxmayor(pvpXMayorObj != null ? rs.getFloat("prod_pvpxmayor") : 0.0f);
+                
+                Object stockObj = rs.getObject("prod_stock");
+                producto.setProd_stock(stockObj != null ? rs.getInt("prod_stock") : 0);
+                
+                        Object aplicaIvaObj = rs.getObject("prod_aplicaIva");
+                        if (aplicaIvaObj != null) {
+                            if (aplicaIvaObj instanceof Boolean) {
+                                producto.setProd_aplicalva((Boolean) aplicaIvaObj);
+                            } else {
+                                producto.setProd_aplicalva(rs.getInt("prod_aplicaIva") > 0);
+                            }
+                } else {
+                    producto.setProd_aplicalva(false);
+                }
+                
+                // Leer estado y convertir de BD ('A'/'I') a formato legible ("Activo"/"Inactivo")
+                String estadoBD = rs.getString("prod_estado");
+                String estadoLegible = "A";  // Por defecto: Activo
+                if (estadoBD != null) {
+                    if ("A".equals(estadoBD.trim())) {
+                        estadoLegible = "Activo";
+                    } else if ("I".equals(estadoBD.trim())) {
+                        estadoLegible = "Inactivo";
+                    } else {
+                        estadoLegible = estadoBD;  // Mantener el valor si no es 'A' ni 'I'
+                    }
+                }
+                producto.setProd_estado(estadoLegible);
                 return producto;
             }
             
@@ -301,7 +444,7 @@ public class ProductManager {
     public Producto buscarProductoPorNombre(String nombre) {
         if (nombre == null || nombre.trim().isEmpty()) return null;
         
-        String sql = "SELECT * FROM productos WHERE prod_nombre LIKE ? AND prod_estado = 'Activo' LIMIT 1";
+        String sql = "SELECT TOP 1 * FROM producto WHERE prod_nombre LIKE ? AND (prod_estado = 'A' OR prod_estado = 'Activo' OR prod_estado IS NULL)";
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -314,9 +457,43 @@ public class ProductManager {
                 producto.setProd_id(rs.getInt("prod_id"));
                 producto.setProd_cod(rs.getString("prod_cod"));
                 producto.setProd_nombre(rs.getString("prod_nombre"));
-                producto.setProd_pvp(rs.getFloat("prod_pvp"));
-                producto.setProd_stock(rs.getInt("prod_stock"));
-                producto.setProd_estado(rs.getString("prod_estado"));
+                
+                Object precioCompraObj = rs.getObject("prod_precioCompra");
+                producto.setProd_precioCompra(precioCompraObj != null ? rs.getFloat("prod_precioCompra") : 0.0f);
+                
+                Object pvpXMenorObj = rs.getObject("prod_pvpxmenor");
+                producto.setProd_pvpxmenor(pvpXMenorObj != null ? rs.getFloat("prod_pvpxmenor") : 0.0f);
+                
+                Object pvpXMayorObj = rs.getObject("prod_pvpxmayor");
+                producto.setProd_pvpxmayor(pvpXMayorObj != null ? rs.getFloat("prod_pvpxmayor") : 0.0f);
+                
+                Object stockObj = rs.getObject("prod_stock");
+                producto.setProd_stock(stockObj != null ? rs.getInt("prod_stock") : 0);
+                
+                        Object aplicaIvaObj = rs.getObject("prod_aplicaIva");
+                        if (aplicaIvaObj != null) {
+                            if (aplicaIvaObj instanceof Boolean) {
+                                producto.setProd_aplicalva((Boolean) aplicaIvaObj);
+                            } else {
+                                producto.setProd_aplicalva(rs.getInt("prod_aplicaIva") > 0);
+                            }
+                } else {
+                    producto.setProd_aplicalva(false);
+                }
+                
+                // Leer estado y convertir de BD ('A'/'I') a formato legible ("Activo"/"Inactivo")
+                String estadoBD = rs.getString("prod_estado");
+                String estadoLegible = "A";  // Por defecto: Activo
+                if (estadoBD != null) {
+                    if ("A".equals(estadoBD.trim())) {
+                        estadoLegible = "Activo";
+                    } else if ("I".equals(estadoBD.trim())) {
+                        estadoLegible = "Inactivo";
+                    } else {
+                        estadoLegible = estadoBD;  // Mantener el valor si no es 'A' ni 'I'
+                    }
+                }
+                producto.setProd_estado(estadoLegible);
                 return producto;
             }
             
@@ -334,9 +511,9 @@ public class ProductManager {
         }
         
         ObservableList<Producto> resultados = FXCollections.observableArrayList();
-        String sql = "SELECT * FROM productos WHERE " +
+        String sql = "SELECT * FROM producto WHERE " +
                      "(prod_cod LIKE ? OR prod_nombre LIKE ?) " +
-                     "AND prod_estado = 'Activo' " +
+                     "AND (prod_estado = 'A' OR prod_estado = 'Activo' OR prod_estado IS NULL) " +
                      "ORDER BY prod_nombre";
         
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
@@ -353,9 +530,43 @@ public class ProductManager {
                 producto.setProd_id(rs.getInt("prod_id"));
                 producto.setProd_cod(rs.getString("prod_cod"));
                 producto.setProd_nombre(rs.getString("prod_nombre"));
-                producto.setProd_pvp(rs.getFloat("prod_pvp"));
-                producto.setProd_stock(rs.getInt("prod_stock"));
-                producto.setProd_estado(rs.getString("prod_estado"));
+                
+                Object precioCompraObj = rs.getObject("prod_precioCompra");
+                producto.setProd_precioCompra(precioCompraObj != null ? rs.getFloat("prod_precioCompra") : 0.0f);
+                
+                Object pvpXMenorObj = rs.getObject("prod_pvpxmenor");
+                producto.setProd_pvpxmenor(pvpXMenorObj != null ? rs.getFloat("prod_pvpxmenor") : 0.0f);
+                
+                Object pvpXMayorObj = rs.getObject("prod_pvpxmayor");
+                producto.setProd_pvpxmayor(pvpXMayorObj != null ? rs.getFloat("prod_pvpxmayor") : 0.0f);
+                
+                Object stockObj = rs.getObject("prod_stock");
+                producto.setProd_stock(stockObj != null ? rs.getInt("prod_stock") : 0);
+                
+                        Object aplicaIvaObj = rs.getObject("prod_aplicaIva");
+                        if (aplicaIvaObj != null) {
+                            if (aplicaIvaObj instanceof Boolean) {
+                                producto.setProd_aplicalva((Boolean) aplicaIvaObj);
+                            } else {
+                                producto.setProd_aplicalva(rs.getInt("prod_aplicaIva") > 0);
+                            }
+                } else {
+                    producto.setProd_aplicalva(false);
+                }
+                
+                // Leer estado y convertir de BD ('A'/'I') a formato legible ("Activo"/"Inactivo")
+                String estadoBD = rs.getString("prod_estado");
+                String estadoLegible = "A";  // Por defecto: Activo
+                if (estadoBD != null) {
+                    if ("A".equals(estadoBD.trim())) {
+                        estadoLegible = "Activo";
+                    } else if ("I".equals(estadoBD.trim())) {
+                        estadoLegible = "Inactivo";
+                    } else {
+                        estadoLegible = estadoBD;  // Mantener el valor si no es 'A' ni 'I'
+                    }
+                }
+                producto.setProd_estado(estadoLegible);
                 resultados.add(producto);
             }
             
@@ -434,5 +645,58 @@ public class ProductManager {
         }
         
         return resultados;
+    }
+    
+    /**
+     * Verifica si una columna existe en una tabla
+     */
+    private boolean verificarColumnaExiste(String tabla, String columna) {
+        // Intentar con diferentes variaciones del nombre de tabla
+        String[] variacionesTabla = {tabla, tabla.toLowerCase(), tabla.toUpperCase()};
+        
+        for (String nombreTabla : variacionesTabla) {
+            String sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS " +
+                         "WHERE TABLE_NAME = ? AND COLUMN_NAME = ?";
+            
+            try (Connection conn = DatabaseConnection.getInstance().getConnection();
+                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                
+                pstmt.setString(1, nombreTabla);
+                pstmt.setString(2, columna);
+                
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        boolean existe = rs.getInt(1) > 0;
+                        if (existe) {
+                            System.out.println("  [DEBUG] Columna " + nombreTabla + "." + columna + " existe: " + existe);
+                            return true;
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                // Continuar con la siguiente variación
+                continue;
+            }
+        }
+        
+        // Si ninguna variación funcionó, intentar consulta directa sin parámetros
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement()) {
+            
+            String sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS " +
+                         "WHERE TABLE_NAME = 'producto' AND COLUMN_NAME = 'prod_aplicaIva'";
+            try (ResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    boolean existe = rs.getInt(1) > 0;
+                    System.out.println("  [DEBUG] Columna producto.prod_aplicaIva existe (consulta directa): " + existe);
+                    return existe;
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al verificar si la columna existe: " + e.getMessage());
+        }
+        
+        System.out.println("  [DEBUG] Columna producto.prod_aplicaIva no encontrada");
+        return false;
     }
 }

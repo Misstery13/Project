@@ -1,15 +1,34 @@
 package com.example.project;
 
+import com.example.project.entities.ClienteEntity;
+import com.example.project.repositories.ClienteRepository;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import java.sql.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * Manager de clientes usando JPA
+ * Refactorizado para usar JPA en lugar de JDBC
+ */
 public class ClienteManager {
     private static ClienteManager instance;
     private ObservableList<Cliente> clientes;
+    private final ClienteRepository repository;
 
     private ClienteManager() {
         clientes = FXCollections.observableArrayList();
+        // Inicializar JPA explícitamente antes de crear el repositorio
+        try {
+            System.out.println("=== Inicializando ClienteManager con JPA ===");
+            com.example.project.jpa.JPAUtil.getEntityManagerFactory();
+            System.out.println("✓ JPA inicializado correctamente");
+        } catch (Exception e) {
+            System.err.println("✗ ERROR CRÍTICO: No se pudo inicializar JPA");
+            System.err.println("  " + e.getMessage());
+            e.printStackTrace();
+        }
+        repository = new ClienteRepository();
         cargarClientesDesdeDB();
     }
 
@@ -21,33 +40,26 @@ public class ClienteManager {
     }
 
     /**
-     * Carga todos los clientes desde la base de datos
+     * Carga todos los clientes desde la base de datos usando JPA
      */
     private void cargarClientesDesdeDB() {
         clientes.clear();
-        String sql = "SELECT * FROM clientes WHERE cli_estado = 'Activo' ORDER BY cli_nombres";
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try {
+            System.out.println("=== Iniciando carga de clientes desde BD (JPA) ===");
+            List<ClienteEntity> entidades = repository.findAll();
+            System.out.println("Entidades encontradas: " + entidades.size());
             
-            while (rs.next()) {
-                Cliente cliente = new Cliente(
-                    rs.getInt("cli_id"),
-                    rs.getString("cli_cedula"),
-                    rs.getString("cli_apellidos"),
-                    rs.getString("cli_nombres"),
-                    rs.getString("cli_direccion"),
-                    rs.getString("cli_telefono"),
-                    rs.getString("cli_correo")
-                );
+            for (ClienteEntity entity : entidades) {
+                Cliente cliente = entity.toCliente();
                 clientes.add(cliente);
+                System.out.println("  - Cliente cargado: " + cliente.getNombres() + " " + cliente.getApellidos() + " (ID: " + cliente.getId_cliente() + ")");
             }
-            System.out.println("Clientes cargados desde BD: " + clientes.size());
-            
-        } catch (SQLException e) {
-            System.err.println("Error al cargar clientes desde BD: " + e.getMessage());
-            // Si hay error de conexión, cargar datos de prueba en memoria
+            System.out.println("✓ Total clientes cargados desde BD (JPA): " + clientes.size());
+        } catch (Exception e) {
+            System.err.println("✗ Error al cargar clientes desde BD (JPA): " + e.getMessage());
+            e.printStackTrace();
+            // Si hay error, cargar datos de prueba en memoria
+            System.out.println("Cargando datos de prueba como fallback...");
             cargarDatosPrueba();
         }
     }
@@ -75,186 +87,162 @@ public class ClienteManager {
     }
 
     /**
-     * Agrega un cliente a la base de datos
+     * Agrega un cliente a la base de datos usando JPA
      */
     public boolean agregarCliente(Cliente cliente) {
-        String sql = "INSERT INTO clientes (cli_cedula, cli_apellidos, cli_nombres, cli_direccion, cli_telefono, cli_correo) " +
-                     "VALUES (?, ?, ?, ?, ?, ?)";
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
-            pstmt.setString(1, cliente.getCedula());
-            pstmt.setString(2, cliente.getApellidos());
-            pstmt.setString(3, cliente.getNombres());
-            pstmt.setString(4, cliente.getDireccion());
-            pstmt.setString(5, cliente.getTelefono());
-            pstmt.setString(6, cliente.getCorreo());
-            
-            int affectedRows = pstmt.executeUpdate();
-            
-            if (affectedRows > 0) {
-                // Obtener el ID generado
-                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        cliente.setId_cliente(generatedKeys.getInt(1));
-                    }
-                }
-                
-        clientes.add(cliente);
-                System.out.println("Cliente agregado exitosamente. ID: " + cliente.getId_cliente());
-                return true;
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("Error al agregar cliente: " + e.getMessage());
-            if (e.getMessage().contains("Duplicate entry")) {
-                System.err.println("La cédula ya existe en la base de datos");
-            }
-        }
-        
-        return false;
+        return agregarCliente(cliente, "A");  // Estado por defecto: 'A' (Activo)
     }
 
     /**
-     * Actualiza un cliente en la base de datos
+     * Agrega un cliente a la base de datos usando JPA con estado específico
+     */
+    public boolean agregarCliente(Cliente cliente, String estado) {
+        try {
+            ClienteEntity entity = ClienteEntity.fromCliente(cliente, estado);
+            ClienteEntity saved = repository.save(entity);
+            
+            // Actualizar el ID del cliente
+            cliente.setId_cliente(saved.getId());
+            
+            // Agregar a la lista observable
+            clientes.add(cliente);
+            System.out.println("Cliente agregado exitosamente (JPA). ID: " + saved.getId() + ", Estado: " + saved.getEstado());
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error al agregar cliente (JPA): " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Actualiza un cliente en la base de datos usando JPA
      */
     public boolean actualizarCliente(Cliente cliente) {
-        String sql = "UPDATE clientes SET cli_cedula = ?, cli_apellidos = ?, cli_nombres = ?, " +
-                     "cli_direccion = ?, cli_telefono = ?, cli_correo = ? WHERE cli_id = ?";
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, cliente.getCedula());
-            pstmt.setString(2, cliente.getApellidos());
-            pstmt.setString(3, cliente.getNombres());
-            pstmt.setString(4, cliente.getDireccion());
-            pstmt.setString(5, cliente.getTelefono());
-            pstmt.setString(6, cliente.getCorreo());
-            pstmt.setInt(7, cliente.getId_cliente());
-            
-            int affectedRows = pstmt.executeUpdate();
-            
-            if (affectedRows > 0) {
-                recargar();
-                System.out.println("Cliente actualizado exitosamente");
-                return true;
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("Error al actualizar cliente: " + e.getMessage());
+        try {
+            ClienteEntity entity = ClienteEntity.fromCliente(cliente);
+            repository.save(entity);
+            recargar();
+            System.out.println("Cliente actualizado exitosamente (JPA)");
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error al actualizar cliente (JPA): " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
-        
-        return false;
     }
 
     /**
-     * Elimina (inactiva) un cliente de la base de datos
+     * Elimina (inactiva) un cliente de la base de datos usando JPA
      */
     public boolean eliminarCliente(int clienteId) {
-        String sql = "UPDATE clientes SET cli_estado = 'Inactivo' WHERE cli_id = ?";
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setInt(1, clienteId);
-            int affectedRows = pstmt.executeUpdate();
-            
-            if (affectedRows > 0) {
+        try {
+            boolean eliminado = repository.delete(clienteId);
+            if (eliminado) {
                 recargar();
-                System.out.println("Cliente inactivado exitosamente");
-                return true;
+                System.out.println("Cliente inactivado exitosamente (JPA)");
             }
-            
-        } catch (SQLException e) {
-            System.err.println("Error al eliminar cliente: " + e.getMessage());
+            return eliminado;
+        } catch (Exception e) {
+            System.err.println("Error al eliminar cliente (JPA): " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
-        
-        return false;
     }
 
     /**
-     * Busca un cliente por cédula exacta
+     * Busca un cliente por cédula exacta usando JPA
      */
     public Cliente buscarClientePorCedula(String cedula) {
         if (cedula == null || cedula.trim().isEmpty()) return null;
         
-        String sql = "SELECT * FROM clientes WHERE cli_cedula = ? AND cli_estado = 'Activo'";
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            pstmt.setString(1, cedula.trim());
-            ResultSet rs = pstmt.executeQuery();
-            
-            if (rs.next()) {
-                return new Cliente(
-                    rs.getInt("cli_id"),
-                    rs.getString("cli_cedula"),
-                    rs.getString("cli_apellidos"),
-                    rs.getString("cli_nombres"),
-                    rs.getString("cli_direccion"),
-                    rs.getString("cli_telefono"),
-                    rs.getString("cli_correo")
-                );
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("Error al buscar cliente por cédula: " + e.getMessage());
+        try {
+            return repository.findByCedula(cedula.trim())
+                    .map(ClienteEntity::toCliente)
+                    .orElse(null);
+        } catch (Exception e) {
+            System.err.println("Error al buscar cliente por cédula (JPA): " + e.getMessage());
             // Fallback: buscar en memoria
             return buscarEnMemoriaPorCedula(cedula);
         }
-        
-        return null;
     }
 
     /**
-     * Busca clientes por criterio (cédula o nombre)
+     * Busca clientes por cédula parcial usando JPA (búsqueda que contiene el texto)
+     */
+    public ObservableList<Cliente> buscarPorCedula(String cedula) {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            return FXCollections.observableArrayList();
+        }
+        
+        try {
+            List<ClienteEntity> entidades = repository.findByCedulaPartial(cedula);
+            return entidades.stream()
+                    .map(ClienteEntity::toCliente)
+                    .collect(Collectors.toCollection(FXCollections::observableArrayList));
+        } catch (Exception e) {
+            System.err.println("Error al buscar por cédula parcial (JPA): " + e.getMessage());
+            e.printStackTrace();
+            return FXCollections.observableArrayList();
+        }
+    }
+
+    /**
+     * Busca clientes por criterio (cédula o nombre) usando JPA
      */
     public ObservableList<Cliente> buscarClientes(String criterio) {
         if (criterio == null || criterio.trim().isEmpty()) {
             return FXCollections.observableArrayList();
         }
         
-        ObservableList<Cliente> resultados = FXCollections.observableArrayList();
-        String sql = "SELECT * FROM clientes WHERE " +
-                     "(cli_cedula LIKE ? OR cli_nombres LIKE ? OR cli_apellidos LIKE ? " +
-                     "OR CONCAT(cli_nombres, ' ', cli_apellidos) LIKE ?) " +
-                     "AND cli_estado = 'Activo' " +
-                     "ORDER BY cli_nombres";
-        
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            String searchPattern = "%" + criterio.trim() + "%";
-            pstmt.setString(1, searchPattern);
-            pstmt.setString(2, searchPattern);
-            pstmt.setString(3, searchPattern);
-            pstmt.setString(4, searchPattern);
-            
-            ResultSet rs = pstmt.executeQuery();
-            
-            while (rs.next()) {
-                Cliente cliente = new Cliente(
-                    rs.getInt("cli_id"),
-                    rs.getString("cli_cedula"),
-                    rs.getString("cli_apellidos"),
-                    rs.getString("cli_nombres"),
-                    rs.getString("cli_direccion"),
-                    rs.getString("cli_telefono"),
-                    rs.getString("cli_correo")
-                );
-                resultados.add(cliente);
-            }
-            
-        } catch (SQLException e) {
-            System.err.println("Error al buscar clientes: " + e.getMessage());
+        try {
+            List<ClienteEntity> entidades = repository.search(criterio);
+            return entidades.stream()
+                    .map(ClienteEntity::toCliente)
+                    .collect(Collectors.toCollection(FXCollections::observableArrayList));
+        } catch (Exception e) {
+            System.err.println("Error al buscar clientes (JPA): " + e.getMessage());
             // Fallback: buscar en memoria
             return buscarEnMemoria(criterio);
         }
+    }
+    
+    /**
+     * Busca clientes por apellidos usando JPA
+     */
+    public ObservableList<Cliente> buscarPorApellidos(String apellidos) {
+        if (apellidos == null || apellidos.trim().isEmpty()) {
+            return FXCollections.observableArrayList();
+        }
         
-        return resultados;
+        try {
+            List<ClienteEntity> entidades = repository.findByApellidos(apellidos);
+            return entidades.stream()
+                    .map(ClienteEntity::toCliente)
+                    .collect(Collectors.toCollection(FXCollections::observableArrayList));
+        } catch (Exception e) {
+            System.err.println("Error al buscar por apellidos (JPA): " + e.getMessage());
+            return FXCollections.observableArrayList();
+        }
+    }
+    
+    /**
+     * Busca clientes por nombres usando JPA
+     */
+    public ObservableList<Cliente> buscarPorNombres(String nombres) {
+        if (nombres == null || nombres.trim().isEmpty()) {
+            return FXCollections.observableArrayList();
+        }
+        
+        try {
+            List<ClienteEntity> entidades = repository.findByNombres(nombres);
+            return entidades.stream()
+                    .map(ClienteEntity::toCliente)
+                    .collect(Collectors.toCollection(FXCollections::observableArrayList));
+        } catch (Exception e) {
+            System.err.println("Error al buscar por nombres (JPA): " + e.getMessage());
+            return FXCollections.observableArrayList();
+        }
     }
 
     // Métodos auxiliares para fallback en memoria

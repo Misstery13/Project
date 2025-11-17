@@ -7,43 +7,30 @@ import java.sql.Statement;
 
 /**
  * Clase para manejar la conexión a la base de datos SQL Server
- * Configurado para autenticación integrada de Windows (sin usuario ni contraseña)
+ * Configurado para autenticación con usuario y contraseña
  */
 public class DatabaseConnection {
-    // Configuración de conexión con autenticación integrada de Windows
-    // Para SQL Server con autenticación de Windows:
-    // 1. URL: jdbc:sqlserver://localhost:1433;databaseName=bdFactura;integratedSecurity=true
+    // Configuración de conexión con autenticación SQL Server (usuario y contraseña)
+    // Para SQL Server con autenticación SQL:
+    // 1. URL: jdbc:sqlserver://localhost:1433;databaseName=bdFactura;encrypt=true;trustServerCertificate=true
     //    - localhost: servidor local (o el nombre de tu instancia SQL Server)
     //    - 1433: puerto por defecto de SQL Server
     //    - databaseName: nombre de tu base de datos
-    //    - integratedSecurity=true: usa tu credencial de Windows
-    // 2. No necesitas USER ni PASSWORD cuando usas autenticación integrada
-    //
-    // Si tu instancia de SQL Server tiene un nombre específico, usa:
-    // jdbc:sqlserver://localhost\\NOMBRE_INSTANCIA:1433;databaseName=bdFactura;integratedSecurity=true
+    //    - encrypt=true;trustServerCertificate=true: para evitar errores SSL en entorno local
+    // 2. Se requiere USER y PASSWORD para autenticación SQL
     
-    // Configuración básica para SQL Server local con autenticación de Windows
-    // IMPORTANTE: Para instancias con nombre, SQL Server Browser debe estar corriendo
-    // O habilitar TCP/IP con un puerto fijo en SQL Server Configuration Manager
-    // Ver instrucciones en: HABILITAR_TCP_IP_SQL_SERVER.md
+    // URL de conexión (sin integratedSecurity para usar autenticación SQL)
+    private static final String URL = "jdbc:sqlserver://localhost;databaseName=bdFactura;encrypt=true;trustServerCertificate=true";
     
-    // OPCIÓN 1: Instancia predeterminada (MSSQLSERVER) - Prueba esta primera
-    // Si no sabes qué puerto usa, deja que JDBC lo encuentre automáticamente
-    // Añadimos trustServerCertificate=true para evitar error SSL en entorno local
-    private static final String URL = "jdbc:sqlserver://localhost;databaseName=bdFactura;integratedSecurity=true;encrypt=true;trustServerCertificate=true";
+    // Credenciales de autenticación SQL Server
+    private static final String USER = "dianapc";
+    private static final String PASSWORD = "1234";
     
-    // OPCIÓN 2: Instancia predeterminada con puerto 1433 específico
-    // private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=bdFactura;integratedSecurity=true";
+    // OPCIÓN ALTERNATIVA: Si tu instancia tiene un puerto específico, usa:
+    // private static final String URL = "jdbc:sqlserver://localhost:PUERTO;databaseName=bdFactura;encrypt=true;trustServerCertificate=true";
     
-    // OPCIÓN 3: Instancia con nombre DIANAMAIN (requiere Browser o puerto específico)
-    // private static final String URL = "jdbc:sqlserver://localhost\\DIANAMAIN;databaseName=bdFactura;integratedSecurity=true";
-    
-    // OPCIÓN 4: Instancia con nombre y puerto específico (si conoces el puerto)
-    // Primero habilita TCP/IP y configura un puerto, luego usa:
-    // private static final String URL = "jdbc:sqlserver://localhost:PUERTO;databaseName=bdFactura;integratedSecurity=true;instanceName=DIANAMAIN";
-    
-    // NO se necesitan USER ni PASSWORD con autenticación integrada de Windows
-    // Para SQL Server: la URL contiene integratedSecurity=true 
+    // OPCIÓN ALTERNATIVA: Si tu instancia tiene un nombre específico, usa:
+    // private static final String URL = "jdbc:sqlserver://localhost\\NOMBRE_INSTANCIA;databaseName=bdFactura;encrypt=true;trustServerCertificate=true"; 
     
     private static DatabaseConnection instance;
     private Connection connection;
@@ -76,18 +63,19 @@ public class DatabaseConnection {
     public Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             try {
-                // Con autenticación integrada de Windows, no se pasan usuario ni contraseña
-                connection = DriverManager.getConnection(URL);
-                System.out.println("Conexión a SQL Server establecida exitosamente con autenticación de Windows");
+                // Con autenticación SQL, se pasan usuario y contraseña
+                connection = DriverManager.getConnection(URL, USER, PASSWORD);
+                System.out.println("Conexión a SQL Server establecida exitosamente con usuario: " + USER);
             } catch (SQLException e) {
                 System.err.println("Error al conectar con SQL Server: " + e.getMessage());
                 System.err.println("Verifica que:");
                 System.err.println("1. SQL Server esté corriendo (verifica en Servicios de Windows)");
                 System.err.println("2. La instancia de SQL Server esté configurada (localhost o localhost\\NOMBRE_INSTANCIA)");
                 System.err.println("3. La base de datos 'bdFactura' exista");
-                System.err.println("4. Tu usuario de Windows tenga permisos en SQL Server");
-                System.err.println("5. El puerto 1433 esté disponible (o ajusta el puerto en la URL)");
-                System.err.println("\nNOTA: Para autenticación integrada, necesitas sqljdbc_auth.dll en tu PATH");
+                System.err.println("4. El usuario '" + USER + "' exista y tenga permisos en SQL Server");
+                System.err.println("5. La contraseña sea correcta");
+                System.err.println("6. El puerto 1433 esté disponible (o ajusta el puerto en la URL)");
+                System.err.println("7. SQL Server esté configurado para permitir autenticación SQL (modo mixto)");
                 throw e;
             }
         }
@@ -128,12 +116,12 @@ public class DatabaseConnection {
         System.out.println("═══════════════════════════════════════════════════");
         System.out.println("Tipo BD:    SQL Server");
         System.out.println("URL:        " + URL);
-        System.out.println("Autenticación: Windows (integratedSecurity=true)");
-        System.out.println("Usuario:    (se usa tu usuario de Windows)");
-        System.out.println("Contraseña: (no se requiere)");
+        System.out.println("Autenticación: SQL Server (usuario y contraseña)");
+        System.out.println("Usuario:    " + USER);
+        System.out.println("Contraseña: " + (PASSWORD.length() > 0 ? "***" : "(vacía)"));
         System.out.println("═══════════════════════════════════════════════════");
-        System.out.println("NOTA: Con autenticación integrada de Windows,");
-        System.out.println("      SQL Server usa tus credenciales de Windows.");
+        System.out.println("NOTA: Se usa autenticación SQL Server con usuario y contraseña.");
+        System.out.println("      Asegúrate de que SQL Server esté en modo mixto de autenticación.");
         System.out.println("═══════════════════════════════════════════════════");
     }
     
@@ -161,9 +149,10 @@ public class DatabaseConnection {
             System.err.println("2. Verifica que la base de datos 'bdFactura' exista");
             System.err.println("3. Si usas una instancia con nombre, cambia localhost a localhost\\NOMBRE_INSTANCIA");
             System.err.println("4. Verifica el puerto (default: 1433, puede ser diferente en tu instancia)");
-            System.err.println("5. Asegúrate de tener permisos en SQL Server con tu usuario de Windows");
-            System.err.println("6. Descarga sqljdbc_auth.dll si recibes error de autenticación");
-            System.err.println("7. Prueba conectarte desde SQL Server Management Studio (SSMS)");
+            System.err.println("5. Verifica que el usuario '" + USER + "' exista en SQL Server");
+            System.err.println("6. Verifica que la contraseña sea correcta");
+            System.err.println("7. Asegúrate de que SQL Server esté en modo mixto de autenticación");
+            System.err.println("8. Prueba conectarte desde SQL Server Management Studio (SSMS) con las mismas credenciales");
             e.printStackTrace();
         }
     }
@@ -175,10 +164,10 @@ public class DatabaseConnection {
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement()) {
             
-            // Crear tabla de clientes (SQL Server)
+            // Crear tabla de clientes (SQL Server) - NOTA: usar nombre singular 'cliente' para consistencia con JPA
             String sqlClientes = """
-                IF OBJECT_ID('clientes', 'U') IS NULL
-                CREATE TABLE clientes (
+                IF OBJECT_ID('cliente', 'U') IS NULL
+                CREATE TABLE cliente (
                     cli_id INT PRIMARY KEY IDENTITY(1,1),
                     cli_cedula VARCHAR(20) UNIQUE NOT NULL,
                     cli_apellidos VARCHAR(100) NOT NULL,
@@ -186,28 +175,32 @@ public class DatabaseConnection {
                     cli_direccion VARCHAR(200),
                     cli_telefono VARCHAR(20),
                     cli_correo VARCHAR(100),
-                    cli_estado VARCHAR(20) DEFAULT 'Activo',
+                    cli_estado VARCHAR(1) DEFAULT 'A',
                     cli_fecha_registro DATETIME DEFAULT GETDATE()
                 );
             """;
             stmt.execute(sqlClientes);
-            System.out.println("✓ Tabla 'clientes' verificada/creada");
+            System.out.println("✓ Tabla 'cliente' verificada/creada");
             
-            // Crear tabla de productos (SQL Server)
+            // Crear tabla de productos (SQL Server) - NOTA: usar nombre singular 'producto' para consistencia con JPA
+            // Estructura actualizada para coincidir con la tabla real en la BD
             String sqlProductos = """
-                IF OBJECT_ID('productos', 'U') IS NULL
-                CREATE TABLE productos (
+                IF OBJECT_ID('producto', 'U') IS NULL
+                CREATE TABLE producto (
                     prod_id INT PRIMARY KEY IDENTITY(1,1),
-                    prod_cod VARCHAR(50) UNIQUE NOT NULL,
-                    prod_nombre VARCHAR(200) NOT NULL,
-                    prod_pvp DECIMAL(10,2) NOT NULL,
-                    prod_stock INT DEFAULT 0,
-                    prod_estado VARCHAR(20) DEFAULT 'Activo',
-                    prod_fecha_registro DATETIME DEFAULT GETDATE()
+                    prod_cod VARCHAR(80),
+                    prod_nombre VARCHAR(80),
+                    prod_precioCompra FLOAT,
+                    prod_pvpxmenor FLOAT,
+                    prod_pvpxmayor FLOAT,
+                    prod_stock FLOAT DEFAULT 0,
+                    prod_aplicaIva BIT DEFAULT 0,
+                    prod_imagen VARBINARY(MAX),
+                    prod_estado VARCHAR(1) DEFAULT 'A'
                 );
             """;
             stmt.execute(sqlProductos);
-            System.out.println("✓ Tabla 'productos' verificada/creada");
+            System.out.println("✓ Tabla 'producto' verificada/creada");
             
             // Crear tabla de facturas (SQL Server)
             String sqlFacturas = """
@@ -223,7 +216,7 @@ public class DatabaseConnection {
                     fac_total DECIMAL(10,2) NOT NULL,
                     fac_estado VARCHAR(20) DEFAULT 'Activa',
                     fac_fecha_registro DATETIME DEFAULT GETDATE(),
-                    FOREIGN KEY (fac_cliente_id) REFERENCES clientes(cli_id)
+                    FOREIGN KEY (fac_cliente_id) REFERENCES cliente(cli_id)
                 );
             """;
             stmt.execute(sqlFacturas);
@@ -242,7 +235,7 @@ public class DatabaseConnection {
                     det_descuento DECIMAL(5,2) DEFAULT 0,
                     det_subtotal DECIMAL(10,2) NOT NULL,
                     FOREIGN KEY (det_factura_id) REFERENCES facturas(fac_id),
-                    FOREIGN KEY (det_producto_id) REFERENCES productos(prod_id)
+                    FOREIGN KEY (det_producto_id) REFERENCES producto(prod_id)
                 );
             """;
             stmt.execute(sqlDetalles);

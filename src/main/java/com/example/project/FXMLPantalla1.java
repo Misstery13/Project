@@ -6,6 +6,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -34,6 +35,8 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
     private TextArea txt_direccion;
     @javafx.fxml.FXML
     private Button btn_grabar;
+    @javafx.fxml.FXML
+    private ChoiceBox<String> chbox_estado;
 
     private Cliente clienteEnEdicion;
 
@@ -89,10 +92,28 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
 
         txt_correo.setOnKeyPressed(evento -> {
             if (evento.getCode() == KeyCode.ENTER || evento.getCode() == KeyCode.TAB) {
-                btn_grabar.requestFocus();
+                if (chbox_estado != null) {
+                    chbox_estado.requestFocus();
+                } else {
+                    btn_grabar.requestFocus();
+                }
                 evento.consume();
             }
         });
+
+        // Inicializar el ComboBox de estado
+        if (chbox_estado != null) {
+            System.out.println("═══════════════════════════════════════════════════");
+            System.out.println("🔍 DEBUG: Inicializando FXMLPantalla1 (FUNCIONA)");
+            System.out.println("═══════════════════════════════════════════════════");
+            debugChoiceBox("ANTES de inicializar", chbox_estado);
+            
+            chbox_estado.getItems().setAll("Activo", "Inactivo");
+            chbox_estado.setValue("Activo");  // Valor por defecto: Activo
+            
+            debugChoiceBox("DESPUÉS de inicializar", chbox_estado);
+            // Convertir el valor seleccionado a 'A' o 'I' al guardar
+        }
 
         txt_cedula.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal) {
@@ -106,7 +127,10 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
         Mod_general.fun_detectarTecla(txt_nombres, KeyCode.ENTER, txt_direccion);
         Mod_general.fun_detectarTecla(txt_direccion,KeyCode.ENTER, txt_telefono);
         Mod_general.fun_detectarTecla(txt_telefono,KeyCode.ENTER, txt_correo);
-        Mod_general.fun_detectarTecla(txt_correo,KeyCode.ENTER, btn_grabar);
+        Mod_general.fun_detectarTecla(txt_correo,KeyCode.ENTER, chbox_estado != null ? chbox_estado : btn_grabar);
+        if (chbox_estado != null) {
+            Mod_general.fun_detectarTecla(chbox_estado, KeyCode.ENTER, btn_grabar);
+        }
     }
 
     public void cargarClienteParaEdicion(Cliente cliente) {
@@ -118,8 +142,34 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
             txt_direccion.setText(cliente.getDireccion());
             txt_telefono.setText(cliente.getTelefono());
             txt_correo.setText(cliente.getCorreo());
-            txt_cedula.requestFocus();
         }
+        txt_cedula.requestFocus();
+    }
+    
+    /**
+     * Método de debugging para ChoiceBox (mismo que en FXMLPantalla2)
+     */
+    private void debugChoiceBox(String momento, javafx.scene.control.ChoiceBox<String> cb) {
+        if (cb == null) {
+            System.out.println("  [DEBUG " + momento + "] ChoiceBox es NULL");
+            return;
+        }
+        
+        System.out.println("  [DEBUG " + momento + "] ChoiceBox Estado:");
+        System.out.println("    - isDisabled(): " + cb.isDisabled());
+        System.out.println("    - isMouseTransparent(): " + cb.isMouseTransparent());
+        System.out.println("    - isFocusTraversable(): " + cb.isFocusTraversable());
+        System.out.println("    - isVisible(): " + cb.isVisible());
+        System.out.println("    - isManaged(): " + cb.isManaged());
+        System.out.println("    - getItems().size(): " + cb.getItems().size());
+        System.out.println("    - getItems(): " + cb.getItems());
+        System.out.println("    - getValue(): " + cb.getValue());
+        System.out.println("    - getParent(): " + (cb.getParent() != null ? cb.getParent().getClass().getSimpleName() : "null"));
+        System.out.println("    - getScene(): " + (cb.getScene() != null ? "NO null" : "null"));
+        System.out.println("    - getWidth(): " + cb.getWidth());
+        System.out.println("    - getHeight(): " + cb.getHeight());
+        System.out.println("    - getLayoutX(): " + cb.getLayoutX());
+        System.out.println("    - getLayoutY(): " + cb.getLayoutY());
     }
 
     @javafx.fxml.FXML
@@ -210,6 +260,13 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
             clienteEnEdicion = null;
         } else {
 
+            // Obtener el estado del ComboBox y convertir a código de BD ('A' o 'I')
+            String estadoSeleccionado = (chbox_estado != null && chbox_estado.getValue() != null) 
+                    ? chbox_estado.getValue() 
+                    : "Activo";
+            // Convertir "Activo" a "A" y "Inactivo" a "I"
+            String estado = "Activo".equals(estadoSeleccionado) ? "A" : "I";
+            
             Cliente nuevoCliente = new Cliente(
                     0, // id_cliente se asigna automáticamente
                     txt_cedula.getText().trim(),
@@ -220,7 +277,7 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
                     txt_correo.getText().trim()
             );
 
-            ClienteManager.getInstance().agregarCliente(nuevoCliente);
+            ClienteManager.getInstance().agregarCliente(nuevoCliente, estado);
 
             // Debug para confirmar que se guardó
             System.out.println("=== CLIENTE GUARDADO CON CTRL+G ===");
@@ -242,6 +299,9 @@ public class FXMLPantalla1 implements javafx.fxml.Initializable {
         txt_direccion.clear();
         txt_telefono.clear();
         txt_correo.clear();
+        if (chbox_estado != null) {
+            chbox_estado.setValue("Activo");  // Restablecer a Activo
+        }
 
         txt_cedula.requestFocus();
     }

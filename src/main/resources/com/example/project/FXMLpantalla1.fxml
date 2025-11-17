@@ -23,6 +23,8 @@
       <Label layoutX="65.0" layoutY="303.0" text="Telefono:" />
       <TextField fx:id="txt_correo" layoutX="140.0" layoutY="335.0" onAction="#acc_txtcorreo" prefHeight="25.0" prefWidth="208.0" />
       <Label layoutX="65.0" layoutY="339.0" text="Correo:" />
+      <Label layoutX="65.0" layoutY="371.0" text="Estado:" />
+      <ChoiceBox fx:id="chbox_estado" layoutX="140.0" layoutY="367.0" prefHeight="25.0" prefWidth="208.0" />
       <Button id="clean" fx:id="btn_cancelar" alignment="CENTER_RIGHT" contentDisplay="TOP" layoutX="461.0" layoutY="261.0" mnemonicParsing="false" onAction="#acc_btncancelar" text="Cancelar" textAlignment="CENTER">
          <graphic>
             <ImageView fitHeight="54.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
@@ -41,6 +43,5 @@
             </ImageView>
          </graphic>
       </Button>
-      <Button layoutX="104.0" layoutY="392.0" mnemonicParsing="false" onAction="#btn" text="Button" />
    </children>
 </AnchorPane>

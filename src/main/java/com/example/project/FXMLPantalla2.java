@@ -5,10 +5,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import javafx.fxml.Initializable;
+import java.net.URL;
+import java.util.ResourceBundle;
 
-public class FXMLPantalla2 {
+public class FXMLPantalla2 implements Initializable {
     @javafx.fxml.FXML
     private Button btn_cancelar;
     @javafx.fxml.FXML
@@ -20,20 +24,37 @@ public class FXMLPantalla2 {
     @javafx.fxml.FXML
     private TextField txt_nombre;
     @javafx.fxml.FXML
-    private TextField txt_pvp;
+    private TextField txt_precioCompra;
+    @javafx.fxml.FXML
+    private TextField txt_pvpxmenor;
+    @javafx.fxml.FXML
+    private TextField txt_pvpxmayor;
+    @javafx.fxml.FXML
+    private TextField txt_stock;
+    @javafx.fxml.FXML
+    private javafx.scene.control.CheckBox chk_aplicaIva;
+    @javafx.fxml.FXML
+    private javafx.scene.control.ChoiceBox<String> chbox_estado;
 
-    public void initialize(java.net.URL url, java.util.ResourceBundle resourceBundle) {
-        ap_pantalla2.sceneProperty().addListener(new javafx.beans.value.ChangeListener<>() {
-            @Override
-            public void changed(javafx.beans.value.ObservableValue<? extends javafx.scene.Scene> obs, javafx.scene.Scene oldScene, javafx.scene.Scene newScene) {
-                if (newScene != null) {
-                    newScene.setOnKeyPressed(event -> {
-                        if (event.isControlDown() && event.getCode() == javafx.scene.input.KeyCode.G) {
-                            btn_grabar.fire();
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        // Inicializar ChoiceBox de estado
+        if (chbox_estado != null) {
+            chbox_estado.getItems().setAll("Activo", "Inactivo");
+            chbox_estado.setValue("Activo"); // Valor por defecto
+        }
+        
+        if (chk_aplicaIva != null) {
+            chk_aplicaIva.setSelected(false); // Valor por defecto
+        }
 
-                        }
-                    });
-                }
+        ap_pantalla2.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                newScene.setOnKeyPressed(event -> {
+                    if (event.isControlDown() && event.getCode() == KeyCode.G) {
+                        btn_grabar.fire();
+                    }
+                });
             }
         });
     }
@@ -50,36 +71,106 @@ public class FXMLPantalla2 {
 
     @javafx.fxml.FXML
     public void acc_btngrabar(ActionEvent actionEvent) {
+        // Validar campos requeridos
         String cod = txt_codigo.getText() == null ? "" : txt_codigo.getText().trim();
         String nom = txt_nombre.getText() == null ? "" : txt_nombre.getText().trim();
-        String pvpStr = txt_pvp.getText() == null ? "" : txt_pvp.getText().trim();
+        String precioCompraStr = txt_precioCompra != null && txt_precioCompra.getText() != null ? txt_precioCompra.getText().trim() : "0";
+        String pvpXMenorStr = txt_pvpxmenor != null && txt_pvpxmenor.getText() != null ? txt_pvpxmenor.getText().trim() : "";
+        String pvpXMayorStr = txt_pvpxmayor != null && txt_pvpxmayor.getText() != null ? txt_pvpxmayor.getText().trim() : "";
+        String stockStr = txt_stock != null && txt_stock.getText() != null ? txt_stock.getText().trim() : "0";
 
-        if (cod.isEmpty() || nom.isEmpty() || pvpStr.isEmpty()) {
-            mostrarAlerta(AlertType.WARNING, "Campos requeridos", "Ingrese código, nombre y PVP");
+        if (cod.isEmpty() || nom.isEmpty()) {
+            mostrarAlerta(AlertType.WARNING, "Campos requeridos", "Ingrese código y nombre");
             return;
         }
+        
+        // Validar código duplicado
         if (ProductManager.getInstance().existeCodigo(cod)) {
             mostrarAlerta(AlertType.ERROR, "Código duplicado", "Ya existe un producto con el mismo código");
             return;
         }
+        
+        // Validar nombre duplicado
         if (ProductManager.getInstance().existeNombre(nom)) {
             mostrarAlerta(AlertType.ERROR, "Nombre duplicado", "Ya existe un producto con el mismo nombre");
             return;
         }
-        float pvp;
-        try { pvp = Float.parseFloat(pvpStr); }
-        catch (NumberFormatException ex) { mostrarAlerta(AlertType.ERROR, "PVP inválido", "Ingrese un número válido"); return; }
+        
+        // Validar y parsear valores numéricos
+        float precioCompra = 0.0f;
+        try { 
+            if (!precioCompraStr.isEmpty()) precioCompra = Float.parseFloat(precioCompraStr); 
+        } catch (NumberFormatException ex) { 
+            mostrarAlerta(AlertType.ERROR, "Precio de compra inválido", "Ingrese un número válido"); 
+            return; 
+        }
+        
+        float pvpXMenor = 0.0f;
+        try { 
+            if (!pvpXMenorStr.isEmpty()) pvpXMenor = Float.parseFloat(pvpXMenorStr); 
+            else {
+                mostrarAlerta(AlertType.WARNING, "PVP por menor requerido", "Ingrese el precio de venta por menor");
+                return;
+            }
+        } catch (NumberFormatException ex) { 
+            mostrarAlerta(AlertType.ERROR, "PVP por menor inválido", "Ingrese un número válido"); 
+            return; 
+        }
+        
+        float pvpXMayor = 0.0f;
+        try { 
+            if (!pvpXMayorStr.isEmpty()) pvpXMayor = Float.parseFloat(pvpXMayorStr);
+            else pvpXMayor = pvpXMenor;  // Si no se ingresa, usar el mismo que menor
+        } catch (NumberFormatException ex) { 
+            mostrarAlerta(AlertType.ERROR, "PVP por mayor inválido", "Ingrese un número válido"); 
+            return; 
+        }
+        
+        int stock = 0;
+        try { 
+            if (!stockStr.isEmpty()) stock = Integer.parseInt(stockStr); 
+        } catch (NumberFormatException ex) { 
+            mostrarAlerta(AlertType.ERROR, "Stock inválido", "Ingrese un número entero válido"); 
+            return; 
+        }
+        
+        // Obtener el estado del ComboBox y convertir a código de BD ('A' o 'I') (misma lógica que FXMLPantalla1)
+        String estadoSeleccionado = (chbox_estado != null && chbox_estado.getValue() != null) 
+                ? chbox_estado.getValue() 
+                : "Activo";
+        // Convertir "Activo" a "A" y "Inactivo" a "I"
+        String estado = "Activo".equals(estadoSeleccionado) ? "A" : "I";
+        
+        // Obtener el valor de aplica IVA del checkbox
+        boolean aplicaIva = chk_aplicaIva != null && chk_aplicaIva.isSelected();
 
+        // Crear el producto
         Producto p = new Producto();
         p.setProd_cod(cod);
         p.setProd_nombre(nom);
-        p.setProd_pvp(pvp);
-        ProductManager.getInstance().agregarProducto(p);
-
-        mostrarAlerta(AlertType.INFORMATION, "Registro exitoso", "Producto registrado correctamente");
-        txt_codigo.clear();
-        txt_nombre.clear();
-        txt_pvp.clear();
+        p.setProd_precioCompra(precioCompra);
+        p.setProd_pvpxmenor(pvpXMenor);
+        p.setProd_pvpxmayor(pvpXMayor);
+        p.setProd_stock(stock);
+        p.setProd_aplicalva(aplicaIva);
+        p.setProd_estado(estado);
+        
+        // Guardar el producto
+        if (ProductManager.getInstance().agregarProducto(p)) {
+            mostrarAlerta(AlertType.INFORMATION, "Registro exitoso", "Producto registrado correctamente");
+            
+            // Limpiar el formulario
+            txt_codigo.clear();
+            txt_nombre.clear();
+            if (txt_precioCompra != null) txt_precioCompra.clear();
+            if (txt_pvpxmenor != null) txt_pvpxmenor.clear();
+            if (txt_pvpxmayor != null) txt_pvpxmayor.clear();
+            if (txt_stock != null) txt_stock.clear();
+            if (chk_aplicaIva != null) chk_aplicaIva.setSelected(false);
+            if (chbox_estado != null) chbox_estado.setValue("Activo");  // Restablecer a Activo
+        } else {
+            mostrarAlerta(AlertType.ERROR, "Error", "No se pudo guardar el producto");
+        }
     }
 
     private void mostrarAlerta(AlertType tipo, String titulo, String contenido) {

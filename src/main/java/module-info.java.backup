@@ -14,7 +14,23 @@ module com.example.project {
     requires java.sql;
     requires com.microsoft.sqlserver.jdbc;
     requires com.fasterxml.jackson.databind;
+    
+    // JPA / Hibernate
+    requires jakarta.persistence;
+    requires jakarta.transaction;
+    requires java.naming;
+    requires jakarta.cdi;
+    // Hibernate se carga como módulo automático, no necesita requires explícito
 
     opens com.example.project to javafx.fxml;
+    // Abrir entidades para reflexión de JPA/Hibernate (necesario para proxies y lazy loading)
+    opens com.example.project.entities;
+    opens com.example.project.repositories;
+    opens com.example.project.jpa;
+    
     exports com.example.project;
+    exports com.example.project.entities;
+    exports com.example.project.repositories;
+    exports com.example.project.jpa;
 }
+
