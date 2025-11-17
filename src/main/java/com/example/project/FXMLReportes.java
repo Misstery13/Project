@@ -7,10 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
@@ -39,6 +36,8 @@ public class FXMLReportes implements Initializable {
     private ChoiceBox<String> chbox;
     @javafx.fxml.FXML
     private TextField txt_cliente;
+    @javafx.fxml.FXML
+    private Button btn_generar_reporte;
 
     // Lista observable para los resultados de búsqueda (debe ser una variable de instancia)
     private ObservableList<Cliente> clientesObservable = FXCollections.observableArrayList();
@@ -288,5 +287,23 @@ public class FXMLReportes implements Initializable {
         System.out.println("=== FIN BÚSQUEDA ===\n");
     }
     
+    /**
+     * Genera y muestra el reporte de clientes usando JasperReports
+     */
+    @javafx.fxml.FXML
+    public void acc_generarReporte() {
+        System.out.println("Botón 'Generar Reporte' presionado");
+        boolean exito = ReporteClientes.generarReporte();
+        if (exito) {
+            System.out.println("✓ Reporte generado y mostrado correctamente");
+        } else {
+            System.err.println("✗ Error al generar el reporte");
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Error al generar reporte");
+            alert.setContentText("No se pudo generar el reporte. Verifique la consola para más detalles.");
+            alert.showAndWait();
+        }
+    }
     
 }

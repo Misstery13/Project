@@ -7,6 +7,8 @@ public class DetalleFactura {
     private String prod_nombre;
     private float cantidad;
     private float prod_pvp;
+    private float prod_pvpxmenor;  // Precio venta por menor
+    private float prod_pvpxmayor;  // Precio venta por mayor
     private float iva;
     private float total;
     private boolean aplicaIva;
@@ -86,4 +88,20 @@ public class DetalleFactura {
 
     public float getDescuento() { return descuento; }
     public void setDescuento(float descuento) { this.descuento = descuento; }
+
+    public float getProd_pvpxmenor() {
+        return prod_pvpxmenor;
+    }
+
+    public void setProd_pvpxmenor(float prod_pvpxmenor) {
+        this.prod_pvpxmenor = prod_pvpxmenor;
+    }
+
+    public float getProd_pvpxmayor() {
+        return prod_pvpxmayor;
+    }
+
+    public void setProd_pvpxmayor(float prod_pvpxmayor) {
+        this.prod_pvpxmayor = prod_pvpxmayor;
+    }
 }

@@ -36,6 +36,8 @@ public class FXMLPantalla2 implements Initializable {
     @javafx.fxml.FXML
     private javafx.scene.control.ChoiceBox<String> chbox_estado;
 
+    private Producto productoEnEdicion;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Inicializar ChoiceBox de estado
@@ -84,16 +86,29 @@ public class FXMLPantalla2 implements Initializable {
             return;
         }
         
-        // Validar código duplicado
-        if (ProductManager.getInstance().existeCodigo(cod)) {
-            mostrarAlerta(AlertType.ERROR, "Código duplicado", "Ya existe un producto con el mismo código");
-            return;
-        }
-        
-        // Validar nombre duplicado
-        if (ProductManager.getInstance().existeNombre(nom)) {
-            mostrarAlerta(AlertType.ERROR, "Nombre duplicado", "Ya existe un producto con el mismo nombre");
-            return;
+        // Si estamos editando, verificar duplicados solo si el código o nombre cambió
+        if (productoEnEdicion == null) {
+            // Validar código duplicado solo para productos nuevos
+            if (ProductManager.getInstance().existeCodigo(cod)) {
+                mostrarAlerta(AlertType.ERROR, "Código duplicado", "Ya existe un producto con el mismo código");
+                return;
+            }
+            
+            // Validar nombre duplicado solo para productos nuevos
+            if (ProductManager.getInstance().existeNombre(nom)) {
+                mostrarAlerta(AlertType.ERROR, "Nombre duplicado", "Ya existe un producto con el mismo nombre");
+                return;
+            }
+        } else {
+            // Si estamos editando, verificar duplicados solo si cambió el código o nombre
+            if (!cod.equals(productoEnEdicion.getProd_cod()) && ProductManager.getInstance().existeCodigo(cod)) {
+                mostrarAlerta(AlertType.ERROR, "Código duplicado", "Ya existe un producto con el mismo código");
+                return;
+            }
+            if (!nom.equals(productoEnEdicion.getProd_nombre()) && ProductManager.getInstance().existeNombre(nom)) {
+                mostrarAlerta(AlertType.ERROR, "Nombre duplicado", "Ya existe un producto con el mismo nombre");
+                return;
+            }
         }
         
         // Validar y parsear valores numéricos
@@ -144,8 +159,16 @@ public class FXMLPantalla2 implements Initializable {
         // Obtener el valor de aplica IVA del checkbox
         boolean aplicaIva = chk_aplicaIva != null && chk_aplicaIva.isSelected();
 
-        // Crear el producto
-        Producto p = new Producto();
+        // Crear o actualizar el producto
+        Producto p;
+        if (productoEnEdicion != null) {
+            // Estamos editando, usar el producto existente
+            p = productoEnEdicion;
+        } else {
+            // Estamos creando uno nuevo
+            p = new Producto();
+        }
+        
         p.setProd_cod(cod);
         p.setProd_nombre(nom);
         p.setProd_precioCompra(precioCompra);
@@ -155,22 +178,81 @@ public class FXMLPantalla2 implements Initializable {
         p.setProd_aplicalva(aplicaIva);
         p.setProd_estado(estado);
         
-        // Guardar el producto
-        if (ProductManager.getInstance().agregarProducto(p)) {
-            mostrarAlerta(AlertType.INFORMATION, "Registro exitoso", "Producto registrado correctamente");
-            
-            // Limpiar el formulario
-            txt_codigo.clear();
-            txt_nombre.clear();
-            if (txt_precioCompra != null) txt_precioCompra.clear();
-            if (txt_pvpxmenor != null) txt_pvpxmenor.clear();
-            if (txt_pvpxmayor != null) txt_pvpxmayor.clear();
-            if (txt_stock != null) txt_stock.clear();
-            if (chk_aplicaIva != null) chk_aplicaIva.setSelected(false);
-            if (chbox_estado != null) chbox_estado.setValue("Activo");  // Restablecer a Activo
+        // Guardar o actualizar el producto
+        boolean exito;
+        if (productoEnEdicion != null) {
+            exito = ProductManager.getInstance().actualizarProducto(p);
+            if (exito) {
+                mostrarAlerta(AlertType.INFORMATION, "Actualización exitosa", "Producto actualizado correctamente");
+            } else {
+                mostrarAlerta(AlertType.ERROR, "Error", "No se pudo actualizar el producto");
+            }
         } else {
-            mostrarAlerta(AlertType.ERROR, "Error", "No se pudo guardar el producto");
+            exito = ProductManager.getInstance().agregarProducto(p);
+            if (exito) {
+                mostrarAlerta(AlertType.INFORMATION, "Registro exitoso", "Producto registrado correctamente");
+            } else {
+                mostrarAlerta(AlertType.ERROR, "Error", "No se pudo guardar el producto");
+            }
         }
+        
+        if (exito) {
+            // Limpiar el formulario
+            limpiarFormulario();
+            productoEnEdicion = null;
+        }
+    }
+
+    /**
+     * Carga un producto para edición
+     */
+    public void cargarProductoParaEdicion(Producto producto) {
+        this.productoEnEdicion = producto;
+        if (producto != null) {
+            txt_codigo.setText(producto.getProd_cod());
+            txt_nombre.setText(producto.getProd_nombre());
+            if (txt_precioCompra != null) {
+                txt_precioCompra.setText(String.valueOf(producto.getProd_precioCompra()));
+            }
+            if (txt_pvpxmenor != null) {
+                txt_pvpxmenor.setText(String.valueOf(producto.getProd_pvpxmenor()));
+            }
+            if (txt_pvpxmayor != null) {
+                txt_pvpxmayor.setText(String.valueOf(producto.getProd_pvpxmayor()));
+            }
+            if (txt_stock != null) {
+                txt_stock.setText(String.valueOf(producto.getProd_stock()));
+            }
+            if (chk_aplicaIva != null) {
+                chk_aplicaIva.setSelected(producto.getProd_aplicalva());
+            }
+            if (chbox_estado != null) {
+                // Convertir estado de BD ('A'/'I') a formato legible ("Activo"/"Inactivo")
+                String estado = producto.getProd_estado();
+                if ("A".equals(estado) || "Activo".equals(estado)) {
+                    chbox_estado.setValue("Activo");
+                } else if ("I".equals(estado) || "Inactivo".equals(estado)) {
+                    chbox_estado.setValue("Inactivo");
+                } else {
+                    chbox_estado.setValue("Activo"); // Por defecto
+                }
+            }
+        }
+        txt_codigo.requestFocus();
+    }
+    
+    /**
+     * Limpia el formulario
+     */
+    private void limpiarFormulario() {
+        txt_codigo.clear();
+        txt_nombre.clear();
+        if (txt_precioCompra != null) txt_precioCompra.clear();
+        if (txt_pvpxmenor != null) txt_pvpxmenor.clear();
+        if (txt_pvpxmayor != null) txt_pvpxmayor.clear();
+        if (txt_stock != null) txt_stock.clear();
+        if (chk_aplicaIva != null) chk_aplicaIva.setSelected(false);
+        if (chbox_estado != null) chbox_estado.setValue("Activo");
     }
 
     private void mostrarAlerta(AlertType tipo, String titulo, String contenido) {

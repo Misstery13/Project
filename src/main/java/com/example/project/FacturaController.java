@@ -19,6 +19,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.image.ImageView;
 import javafx.scene.Node;
 import javafx.scene.layout.HBox;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.layout.GridPane;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -56,11 +58,11 @@ public class FacturaController {
     @javafx.fxml.FXML
     private Button btn_imprimir;
     @javafx.fxml.FXML
-    private TableColumn<DetalleFactura, String> col_pvp;
+    private TableColumn<DetalleFactura, String> col_pvpxmenor;
+    @javafx.fxml.FXML
+    private TableColumn<DetalleFactura, String> col_pvpxmayor;
     @javafx.fxml.FXML
     private TableColumn<DetalleFactura, String> col_descripcion;
-    @FXML
-    private TableColumn<DetalleFactura, Boolean> col_aplicaIva;
     @FXML
     private TableColumn<DetalleFactura, String> col_iva;
 
@@ -121,6 +123,16 @@ public class FacturaController {
 
         if (tabla_detalle != null) {
             tabla_detalle.setItems(detalles);
+            
+            // Agregar listener de doble click para editar producto
+            tabla_detalle.setOnMouseClicked(event -> {
+                if (event.getButton() == javafx.scene.input.MouseButton.PRIMARY && event.getClickCount() == 2) {
+                    DetalleFactura detalleSeleccionado = tabla_detalle.getSelectionModel().getSelectedItem();
+                    if (detalleSeleccionado != null) {
+                        abrirPantallaEdicionProducto(detalleSeleccionado);
+                    }
+                }
+            });
         }
         
         // Configurar autocompletado de clientes en el campo de cédula
@@ -130,38 +142,41 @@ public class FacturaController {
         if (col_codigo != null) { col_codigo.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getProd_cod()))); }
         if (col_descripcion != null) { col_descripcion.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getProd_nombre())); }
         if (col_cantidad != null) { col_cantidad.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getCantidad()))); }
-        if (col_pvp != null) { col_pvp.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getProd_pvp()))); }
-        if (col_total != null) { col_total.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getTotal()))); }
-
-        // Columna aplica IVA con ChoiceBox por fila
-        if (col_aplicaIva != null) {
-            col_aplicaIva.setCellFactory(col -> new TableCell<DetalleFactura, Boolean>() {
-                private final javafx.scene.control.ChoiceBox<String> choice = new javafx.scene.control.ChoiceBox<>(FXCollections.observableArrayList("SI", "NO"));
-                {
-                    choice.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
-                        DetalleFactura d = getTableView().getItems().get(getIndex());
-                        boolean aplica = "SI".equals(n);
-                        d.setAplicaIva(aplica);
-                        // Recalcular IVA y total de la fila
-                        float base = d.getCantidad() * d.getProd_pvp();
-                        float iva = aplica ? base * 0.15f : 0f;
-                        d.setTotal(base + iva);
-                        getTableView().refresh();
-                        recalcularTotales();
-                    });
+        
+        // Columna Precio x Menor
+        if (col_pvpxmenor != null) {
+            col_pvpxmenor.setCellValueFactory(data -> {
+                DetalleFactura d = data.getValue();
+                // Mostrar solo si cantidad < 3
+                if (d.getCantidad() < 3) {
+                    return new SimpleStringProperty(String.format("%.2f", d.getProd_pvpxmenor()));
+                } else {
+                    return new SimpleStringProperty("-");
                 }
-
-                @Override
-                protected void updateItem(Boolean item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (empty) {
-                        setGraphic(null);
-                    } else {
-                        DetalleFactura d = getTableView().getItems().get(getIndex());
-                        choice.getSelectionModel().select(d.isAplicaIva() ? "SI" : "NO");
-                        setGraphic(choice);
-                    }
+            });
+        }
+        
+        // Columna Precio x Mayor
+        if (col_pvpxmayor != null) {
+            col_pvpxmayor.setCellValueFactory(data -> {
+                DetalleFactura d = data.getValue();
+                // Mostrar solo si cantidad >= 3
+                if (d.getCantidad() >= 3) {
+                    return new SimpleStringProperty(String.format("%.2f", d.getProd_pvpxmayor()));
+                } else {
+                    return new SimpleStringProperty("-");
                 }
+            });
+        }
+        
+        // Columna TOTAL: muestra el subtotal sin IVA (cantidad * precio - descuento)
+        if (col_total != null) {
+            col_total.setCellValueFactory(data -> {
+                DetalleFactura d = data.getValue();
+                float base = d.getCantidad() * d.getProd_pvp();
+                float descuentoItem = base * d.getDescuento();
+                float subtotal = base - descuentoItem; // Subtotal sin IVA
+                return new SimpleStringProperty(String.format("%.2f", subtotal));
             });
         }
 
@@ -196,10 +211,14 @@ public class FacturaController {
                             default -> 0f;
                         };
                         d.setDescuento(pct);
-                        float base = d.getCantidad() * d.getProd_pvp();
+                        // Recalcular precio según cantidad (x mayor si >= 3, x menor si < 3)
+                        float precioAplicar = (d.getCantidad() >= 3) ? d.getProd_pvpxmayor() : d.getProd_pvpxmenor();
+                        d.setProd_pvp(precioAplicar);
+                        float base = d.getCantidad() * precioAplicar;
                         float descuentoItem = base * d.getDescuento();
                         float baseConDesc = base - descuentoItem;
                         float iva = d.isAplicaIva() ? baseConDesc * 0.15f : 0f;
+                        d.setIva(iva);
                         d.setTotal(baseConDesc + iva);
                         getTableView().refresh();
                         recalcularTotales();
@@ -265,11 +284,26 @@ public class FacturaController {
         d.setProd_cod(productoSeleccionado.getProd_cod());
         d.setProd_nombre(productoSeleccionado.getProd_nombre());
         d.setCantidad(cant);
-        d.setProd_pvp(productoSeleccionado.getProd_pvp());
-        d.setAplicaIva(false);
-        float base = cant * productoSeleccionado.getProd_pvp();
-        float iva = d.isAplicaIva() ? base * 0.15f : 0f;
-        d.setTotal(base + iva);
+        
+        // Guardar ambos precios
+        d.setProd_pvpxmenor(productoSeleccionado.getProd_pvpxmenor());
+        d.setProd_pvpxmayor(productoSeleccionado.getProd_pvpxmayor());
+        
+        // Usar precio x mayor si cantidad >= 3, sino usar precio x menor
+        float precioAplicar = (cant >= 3) ? productoSeleccionado.getProd_pvpxmayor() : productoSeleccionado.getProd_pvpxmenor();
+        d.setProd_pvp(precioAplicar);
+        
+        // Usar el valor de aplicaIva del producto registrado
+        d.setAplicaIva(productoSeleccionado.getProd_aplicalva());
+        d.setDescuento(0f); // Inicializar descuento en 0
+        
+        // Calcular IVA: 15% del valor del producto (cantidad * precio) si aplicaIva es true
+        float base = cant * precioAplicar;
+        float descuentoItem = base * d.getDescuento(); // Inicialmente 0
+        float baseConDesc = base - descuentoItem;
+        float iva = d.isAplicaIva() ? baseConDesc * 0.15f : 0f;
+        d.setIva(iva); // Guardar el valor del IVA
+        d.setTotal(baseConDesc + iva);
         detalles.add(d);
 
         // Limpiar campos después de agregar
@@ -792,5 +826,56 @@ public class FacturaController {
                 }
             }
         });
+    }
+    
+    /**
+     * Abre la pantalla de edición de producto cuando se hace doble click en la tabla
+     */
+    private void abrirPantallaEdicionProducto(DetalleFactura detalle) {
+        try {
+            // Obtener el código del producto desde el detalle
+            String codigoProducto = detalle.getProd_cod();
+            if (codigoProducto == null || codigoProducto.trim().isEmpty()) {
+                mostrarAlerta(AlertType.WARNING, "Error", "No se pudo obtener el código del producto");
+                return;
+            }
+            
+            // Buscar el producto completo en la base de datos
+            Producto producto = ProductManager.getInstance().buscarProductoPorCodigo(codigoProducto);
+            if (producto == null) {
+                mostrarAlerta(AlertType.WARNING, "Producto no encontrado", 
+                    "No se encontró el producto con código: " + codigoProducto);
+                return;
+            }
+            
+            // Cargar FXMLPantalla2
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/project/FXMLpantalla2.fxml"));
+            AnchorPane pantalla2 = loader.load();
+            
+            // Obtener el controlador y cargar el producto para edición
+            FXMLPantalla2 controlador = loader.getController();
+            controlador.cargarProductoParaEdicion(producto);
+            
+            // Abrir en una ventana modal separada para no afectar la pantalla de factura
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.setScene(new Scene(pantalla2));
+            stage.setTitle("Editar Producto");
+            stage.initModality(javafx.stage.Modality.WINDOW_MODAL);
+            
+            // Establecer el propietario como la ventana principal
+            Scene scene = tabla_detalle.getScene();
+            if (scene != null && scene.getWindow() != null) {
+                stage.initOwner(scene.getWindow());
+            }
+            
+            stage.setResizable(false);
+            stage.showAndWait(); // showAndWait() espera a que se cierre la ventana antes de continuar
+            
+            // Después de cerrar la ventana, actualizar los datos del producto en la tabla si es necesario
+            // (opcional: recargar el producto desde la BD para reflejar cambios)
+        } catch (Exception e) {
+            e.printStackTrace();
+            mostrarAlerta(AlertType.ERROR, "Error", "No se pudo abrir la pantalla de edición: " + e.getMessage());
+        }
     }
 }

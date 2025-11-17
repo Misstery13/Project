@@ -1,0 +1,170 @@
+<!-- Created with Jaspersoft Studio version 7.0.3.final using JasperReports Library version 7.0.3-41034ca841d452f3305ba55b9042260aaa1ab5dd  -->
+<jasperReport name="Coffee_Landscape" language="java" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="df013db5-f76e-44d3-b0df-bcbc46d93160">
+	<property name="com.jaspersoft.studio.data.sql.tables" value="ZGJvLiJDbGllbnRlIiBBUyAsMTYzLDE0NCxkMGVmNzY2Mi00YjM4LTQ1MmUtODgwOS1lODNhMDg2&#xa;NzI2NzI7"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Project Maven Java Sistema de ventas"/>
+	<style name="Title" fontName="Times New Roman" fontSize="50.0" bold="true"/>
+	<style name="SubTitle" forecolor="#736343" fontName="Arial" fontSize="18.0"/>
+	<style name="Column header" forecolor="#666666" fontName="Arial" fontSize="12.0" bold="true"/>
+	<style name="Detail" fontName="Arial" fontSize="12.0"/>
+	<style name="Row" mode="Transparent">
+		<conditionalStyle backcolor="#E6DAC3">
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}%2 == 0]]></conditionExpression>
+		</conditionalStyle>
+	</style>
+	<query language="SQL"><![CDATA[SELECT cli_id,
+	cli_cedula,
+	cli_nombres,
+	cli_apellidos,
+	cli_direccion,
+	cli_telefono,
+	cli_correo,
+	cli_estado
+FROM dbo."Cliente"]]></query>
+	<field name="cli_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="cli_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="cli_id"/>
+	</field>
+	<field name="cli_cedula" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cli_cedula"/>
+		<property name="com.jaspersoft.studio.field.label" value="cli_cedula"/>
+	</field>
+	<field name="cli_nombres" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cli_nombres"/>
+		<property name="com.jaspersoft.studio.field.label" value="cli_nombres"/>
+	</field>
+	<field name="cli_apellidos" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cli_apellidos"/>
+		<property name="com.jaspersoft.studio.field.label" value="cli_apellidos"/>
+	</field>
+	<field name="cli_direccion" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cli_direccion"/>
+		<property name="com.jaspersoft.studio.field.label" value="cli_direccion"/>
+	</field>
+	<field name="cli_telefono" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cli_telefono"/>
+		<property name="com.jaspersoft.studio.field.label" value="cli_telefono"/>
+	</field>
+	<field name="cli_correo" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cli_correo"/>
+		<property name="com.jaspersoft.studio.field.label" value="cli_correo"/>
+	</field>
+	<field name="cli_estado" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cli_estado"/>
+		<property name="com.jaspersoft.studio.field.label" value="cli_estado"/>
+	</field>
+	<parameter name="coffee.jpg" class="java.awt.image.BufferedImage"/>
+	<parameter name="coffee_stain.png" class="java.awt.image.BufferedImage"/>
+	<background splitType="Stretch"/>
+	<title height="136" splitType="Stretch">
+		<element kind="image" uuid="1c003177-754c-448f-8ce1-16868856f545" x="0" y="0" width="164" height="126">
+			<expression><![CDATA[$P{coffee.jpg}]]></expression>
+		</element>
+		<element kind="staticText" uuid="bc1ce1da-8232-46ea-be55-cec4abb986dd" x="270" y="0" width="263" height="62" vTextAlign="Middle" style="Title">
+			<text><![CDATA[Clientes]]></text>
+		</element>
+		<element kind="staticText" uuid="f6a78448-8260-4445-a9e0-e3fb53b080d9" x="303" y="62" width="196" height="22" fontName="Times New Roman" style="SubTitle">
+			<text><![CDATA[Reporte de Clientes]]></text>
+		</element>
+		<element kind="staticText" uuid="8240065e-64b6-4170-b5d9-6341598e7b35" x="172" y="94" width="383" height="42" fontSize="10.0" hTextAlign="Right">
+			<text><![CDATA[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce auctor purus gravida arcu aliquam mattis. Donec et nulla libero, ut varius massa. Nulla sed turpis elit. Etiam aliquet mauris a ligula hendrerit in auctor leo lobortis.]]></text>
+		</element>
+		<element kind="image" uuid="4aa6f4d1-27dc-4b34-9227-59e19ce2c959" x="633" y="-73" width="219" height="209">
+			<expression><![CDATA[$P{coffee_stain.png}]]></expression>
+		</element>
+	</title>
+	<pageHeader splitType="Stretch"/>
+	<columnHeader height="16" splitType="Stretch">
+		<element kind="line" uuid="e9d2002a-c8ee-4649-a258-640dad29110c" positionType="FixRelativeToBottom" x="0" y="15" width="802" height="1">
+			<pen lineWidth="0.5" lineColor="#999999"/>
+		</element>
+		<element kind="staticText" uuid="0a2aa2a7-d1ce-4cc3-94e7-be27b22876ed" x="0" y="0" width="100" height="15" forecolor="#736343" style="Column header">
+			<text><![CDATA[Id]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="08c7d04d-19d5-4e86-b34b-37078f196341"/>
+		</element>
+		<element kind="staticText" uuid="bb1082e2-36e5-475e-9326-9938327a7d42" x="100" y="0" width="100" height="15" forecolor="#736343" style="Column header">
+			<text><![CDATA[Cedula]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="3791efee-6091-46c0-a406-89c664348ed2"/>
+		</element>
+		<element kind="staticText" uuid="beba5bfa-54d2-476a-9bdb-b070251f348a" x="200" y="0" width="100" height="15" forecolor="#736343" style="Column header">
+			<text><![CDATA[Nombres]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7a6f9d2c-8cfb-41b7-b700-1c7c84c7b6bd"/>
+		</element>
+		<element kind="staticText" uuid="78e726d0-6cd7-400c-81e1-2079450066e7" x="300" y="0" width="100" height="15" forecolor="#736343" style="Column header">
+			<text><![CDATA[Apellidos]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="13a5240f-ad48-4de4-98a6-70ed6fc7eac8"/>
+		</element>
+		<element kind="staticText" uuid="0073df6e-8488-402f-839f-d28e294e0ad0" x="400" y="0" width="100" height="15" forecolor="#736343" style="Column header">
+			<text><![CDATA[Direccion]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6bc17cdc-af85-43f7-9842-001618197bef"/>
+		</element>
+		<element kind="staticText" uuid="1d79dc78-1d73-4b90-a0b4-63b0403321fe" x="500" y="0" width="100" height="15" forecolor="#736343" style="Column header">
+			<text><![CDATA[Telefono]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9f7599d2-38d5-4abf-b8ee-dd4ed0d03c56"/>
+		</element>
+		<element kind="staticText" uuid="1db76414-2f6d-4a8e-a968-90f10b79ee6f" x="600" y="0" width="100" height="15" forecolor="#736343" style="Column header">
+			<text><![CDATA[Correo]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="8fdcecb5-c4d7-4a37-8389-f710fc4c4a0d"/>
+		</element>
+		<element kind="staticText" uuid="f590d084-c6aa-4528-91ed-e1bd840e9784" x="700" y="0" width="100" height="15" forecolor="#736343" style="Column header">
+			<text><![CDATA[Estado]]></text>
+			<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="28da6864-4a85-494b-967a-2ea6da808aa6"/>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<element kind="frame" uuid="fa7cec56-4ec1-48e6-a26e-7266a995d174" mode="Opaque" x="0" y="0" width="802" height="15" style="Row">
+				<element kind="textField" uuid="3c7cb1ce-8eb7-4f41-a320-d022eb8bac2c" x="0" y="0" width="100" height="15" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{cli_id}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="08c7d04d-19d5-4e86-b34b-37078f196341"/>
+				</element>
+				<element kind="textField" uuid="a356c7c1-640b-4230-9b4e-a72a9aa2db65" x="100" y="0" width="100" height="15" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{cli_cedula}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="3791efee-6091-46c0-a406-89c664348ed2"/>
+				</element>
+				<element kind="textField" uuid="541fc96b-640e-481f-8fc6-06f84ebee136" x="200" y="0" width="100" height="15" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{cli_nombres}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7a6f9d2c-8cfb-41b7-b700-1c7c84c7b6bd"/>
+				</element>
+				<element kind="textField" uuid="1c631f00-ed57-48b9-9c3c-0ea06ae33d88" x="300" y="0" width="100" height="15" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{cli_apellidos}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="13a5240f-ad48-4de4-98a6-70ed6fc7eac8"/>
+				</element>
+				<element kind="textField" uuid="6ccceed2-b01a-4c51-b4c3-62436eed4aac" x="400" y="0" width="100" height="15" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{cli_direccion}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="6bc17cdc-af85-43f7-9842-001618197bef"/>
+				</element>
+				<element kind="textField" uuid="305d772e-51e0-496e-a569-bef22017bfbd" x="500" y="0" width="100" height="15" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{cli_telefono}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="9f7599d2-38d5-4abf-b8ee-dd4ed0d03c56"/>
+				</element>
+				<element kind="textField" uuid="162a74af-3dc2-48be-95ae-8f9cb3de5d91" x="600" y="0" width="100" height="15" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{cli_correo}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="8fdcecb5-c4d7-4a37-8389-f710fc4c4a0d"/>
+				</element>
+				<element kind="textField" uuid="6bac033c-ea4c-4cea-93c6-f22168c3f315" x="700" y="0" width="100" height="15" textAdjust="StretchHeight" style="Detail">
+					<expression><![CDATA[$F{cli_estado}]]></expression>
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="28da6864-4a85-494b-967a-2ea6da808aa6"/>
+				</element>
+			</element>
+		</band>
+	</detail>
+	<columnFooter height="6" splitType="Stretch">
+		<element kind="line" uuid="fa5e88d5-a011-4e32-8f12-ce923f903111" positionType="FixRelativeToBottom" x="0" y="3" width="802" height="1">
+			<pen lineWidth="0.5" lineColor="#999999"/>
+		</element>
+	</columnFooter>
+	<pageFooter height="25" splitType="Stretch">
+		<element kind="frame" uuid="5d8169bd-4a75-48c8-8a68-6d3ad5ba9402" mode="Opaque" x="-21" y="1" width="843" height="24" forecolor="#D0B48E" backcolor="#F2EBDF">
+			<element kind="textField" uuid="e5e27efa-b599-499b-9ca3-848cb511cb7b" x="783" y="1" width="40" height="20" forecolor="#736343" fontSize="10.0" evaluationTime="Report" bold="false" vTextAlign="Middle" style="Column header">
+				<expression><![CDATA[" " + $V{PAGE_NUMBER}]]></expression>
+			</element>
+			<element kind="textField" uuid="18cfe1ca-f7d6-48b0-9827-28578b42a5e0" x="703" y="1" width="80" height="20" forecolor="#736343" fontSize="10.0" bold="false" hTextAlign="Right" vTextAlign="Middle" style="Column header">
+				<expression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></expression>
+			</element>
+			<element kind="textField" uuid="fbce24bb-3cb1-44a3-8eec-8c067ddbe5b5" x="22" y="1" width="197" height="20" forecolor="#736343" fontSize="10.0" pattern="EEEEE dd MMMMM yyyy" bold="false" vTextAlign="Middle" style="Column header">
+				<expression><![CDATA[new java.util.Date()]]></expression>
+			</element>
+		</element>
+	</pageFooter>
+	<summary splitType="Stretch"/>
+</jasperReport>
